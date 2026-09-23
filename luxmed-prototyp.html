@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>LUX MED — Nowoczesny wymiar opieki zdrowotnej (prototyp)</title>
+<meta name="description" content="Prototyp strony głównej LUX MED: umawianie wizyt, pakiety medyczne, placówki, diagnostyka i telemedycyna 24/7.">
+<meta name="theme-color" content="#0A2540">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
+        },
+        colors: {
+          navy: { DEFAULT: '#0A2540', deep: '#002B49', 900: '#061A2E', 800: '#0A2540', 700: '#123A5E', 600: '#1B4E7A' },
+          aqua: { DEFAULT: '#00A8CC', dark: '#0087A6' },
+          mint: { DEFAULT: '#00C49F', dark: '#00A383' },
+          jade: { DEFAULT: '#047857', light: '#059669' },
+          canvas: 'rgb(var(--bg) / <alpha-value>)',
+          surface: 'rgb(var(--surface) / <alpha-value>)',
+          soft: 'rgb(var(--soft) / <alpha-value>)',
+          ink: 'rgb(var(--ink) / <alpha-value>)',
+          muted: 'rgb(var(--muted) / <alpha-value>)',
+          line: 'rgb(var(--line) / <alpha-value>)'
+        },
+        boxShadow: {
+          soft: '0 1px 2px rgba(10,37,64,.05), 0 8px 24px -10px rgba(10,37,64,.12)',
+          lift: '0 2px 6px rgba(10,37,64,.05), 0 28px 56px -20px rgba(10,37,64,.28)',
+          glow: '0 0 0 1px rgba(0,168,204,.35), 0 18px 50px -12px rgba(0,168,204,.45)'
+        }
+      }
+    }
+  };
+</script>
+<style>
+  :root {
+    --bg: 248 250 252; --surface: 255 255 255; --soft: 241 245 249;
+    --ink: 10 37 64; --muted: 78 96 118; --line: 226 232 240;
+    --glass: 255 255 255; --glass-a: .72;
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: 5 17 31; --surface: 10 29 50; --soft: 14 37 62;
+      --ink: 231 239 247; --muted: 150 170 192; --line: 30 52 78;
+      --glass: 13 33 56; --glass-a: .7; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: 5 17 31; --surface: 10 29 50; --soft: 14 37 62;
+    --ink: 231 239 247; --muted: 150 170 192; --line: 30 52 78;
+    --glass: 13 33 56; --glass-a: .7; color-scheme: dark;
+  }
+  html { scroll-behavior: smooth; scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 92px); -webkit-text-size-adjust: 100%; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+  body { background: rgb(var(--bg)); color: rgb(var(--ink)); overflow-x: clip; -webkit-font-smoothing: antialiased; font-feature-settings: "cv11", "ss01"; }
+  img, svg, canvas { max-width: 100%; }
+  :focus-visible { outline: 2px solid #00A8CC; outline-offset: 3px; border-radius: 10px; }
+
+  /* Glass */
+  .glass { background: rgb(var(--glass) / var(--glass-a)); -webkit-backdrop-filter: blur(14px) saturate(150%); backdrop-filter: blur(14px) saturate(150%); border: 1px solid rgb(255 255 255 / .35); }
+  :root[data-theme="dark"] .glass { border-color: rgb(255 255 255 / .08); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .glass { border-color: rgb(255 255 255 / .08); } }
+
+  /* Header */
+  .site-header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; }
+  .topbar { transition: margin-top .35s ease; }
+  .site-header.scrolled .topbar { margin-top: -40px; }
+  .mainbar { background: rgb(var(--surface) / .82); -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); border-bottom: 1px solid rgb(var(--line) / .7); transition: box-shadow .3s; }
+  .site-header.scrolled .mainbar { box-shadow: 0 10px 30px -18px rgba(10,37,64,.35); }
+  .nav-btn { position: relative; display: inline-flex; align-items: center; gap: .3rem; padding: .55rem .75rem; border-radius: .7rem; font-size: .9rem; font-weight: 500; color: rgb(var(--ink) / .82); transition: color .2s, background .2s; }
+  .nav-btn:hover, .nav-btn[aria-expanded="true"] { color: rgb(var(--ink)); background: rgb(var(--soft)); }
+  .nav-btn svg { width: 14px; height: 14px; transition: transform .25s; opacity: .6; }
+  .nav-btn[aria-expanded="true"] svg { transform: rotate(180deg); opacity: 1; }
+  .mega { opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity .22s ease, transform .22s ease; }
+  .mega.open { opacity: 1; transform: none; pointer-events: auto; }
+  .lang-btn { padding: .15rem .55rem; border-radius: 999px; font-size: 11.5px; font-weight: 600; color: rgb(255 255 255 / .7); transition: all .2s; }
+  .lang-btn.is-active { background: #fff; color: #0A2540; }
+
+  /* Buttons */
+  .btn-primary { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 999px; padding: .72rem 1.2rem; font-weight: 600; font-size: .9rem; color: #fff; background: linear-gradient(135deg, #0089AB 0%, #00A0C2 45%, #00A485 100%); box-shadow: 0 10px 26px -10px rgba(0,150,190,.75), inset 0 1px 0 rgba(255,255,255,.25); transition: transform .2s ease, box-shadow .3s ease; white-space: nowrap; }
+  .btn-primary::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%); transform: translateX(-120%); transition: transform .7s ease; }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 16px 36px -10px rgba(0,150,190,.85), 0 0 0 4px rgba(0,196,159,.16); }
+  .btn-primary:hover::after { transform: translateX(120%); }
+  .btn-primary:active { transform: translateY(0) scale(.98); }
+  .btn-ghost { display: inline-flex; align-items: center; gap: .5rem; border-radius: 999px; padding: .68rem 1.1rem; font-weight: 600; font-size: .9rem; color: rgb(var(--ink)); border: 1px solid rgb(var(--line)); background: rgb(var(--surface) / .6); transition: all .2s; white-space: nowrap; }
+  .btn-ghost:hover { border-color: rgba(0,168,204,.55); color: #0087A6; box-shadow: 0 0 0 4px rgba(0,168,204,.1); }
+  .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgb(var(--line)); color: rgb(var(--ink)); background: rgb(var(--surface) / .7); transition: all .2s; }
+  .icon-btn:hover { border-color: rgba(0,168,204,.5); color: #0087A6; }
+
+  /* Inputs */
+  .field { display: flex; align-items: center; gap: .6rem; height: 54px; padding: 0 1rem; border-radius: 16px; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); transition: border-color .2s, box-shadow .2s; }
+  .field:focus-within { border-color: #00A8CC; box-shadow: 0 0 0 4px rgba(0,168,204,.14); }
+  .field input, .field select { flex: 1; min-width: 0; background: transparent; outline: none; font-size: .95rem; color: rgb(var(--ink)); }
+  .field input::placeholder { color: rgb(var(--muted) / .85); }
+  .field svg { width: 18px; height: 18px; color: rgb(var(--muted)); flex: none; }
+  .field.shake { animation: shake .4s; border-color: #e11d48; }
+  @keyframes shake { 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }
+
+  /* Suggest */
+  .suggest { position: absolute; left: 0; right: 0; top: calc(100% + 8px); z-index: 40; max-height: 340px; overflow-y: auto; padding: .4rem; border-radius: 18px; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); box-shadow: 0 24px 60px -20px rgba(10,37,64,.35); opacity: 0; transform: translateY(-4px); pointer-events: none; transition: all .18s ease; }
+  .suggest.open { opacity: 1; transform: none; pointer-events: auto; }
+  .sug-item { display: flex; align-items: center; gap: .75rem; padding: .55rem .65rem; border-radius: 12px; cursor: pointer; transition: background .15s; }
+  .sug-item:hover, .sug-item.is-active { background: rgb(var(--soft)); }
+  .sug-ic { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: rgba(0,168,204,.1); color: #0087A6; flex: none; }
+  .sug-ic svg { width: 16px; height: 16px; }
+  .sug-item mark { background: transparent; color: #0092B3; font-weight: 700; }
+  .sug-group { padding: .5rem .65rem .25rem; font-size: 11.5px; font-weight: 600; color: rgb(var(--muted)); }
+
+  /* Hero */
+  .grid-bg { background-image: linear-gradient(rgb(var(--ink) / .045) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--ink) / .045) 1px, transparent 1px); background-size: 44px 44px; -webkit-mask-image: radial-gradient(ellipse 70% 60% at 30% 35%, #000 25%, transparent 75%); mask-image: radial-gradient(ellipse 70% 60% at 30% 35%, #000 25%, transparent 75%); }
+  .dna-panel { background: radial-gradient(120% 90% at 72% 18%, #104B72 0%, #0A2540 46%, #061A2E 100%); }
+  .dna-panel::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), inset 0 -80px 120px -60px rgba(0,196,159,.25); pointer-events: none; }
+  .dna-panel.no-webgl canvas { display: none; }
+  .dna-panel.no-webgl .dna-fallback { display: block; }
+  .dna-fallback { display: none; position: absolute; inset: 22%; border-radius: 50%; background: radial-gradient(circle at 35% 35%, rgba(0,196,159,.7), rgba(0,168,204,.25) 45%, transparent 70%); filter: blur(8px); animation: breathe 5s ease-in-out infinite; }
+  @keyframes breathe { 50% { transform: scale(1.08); opacity: .8; } }
+  .float-y { animation: floatY 6s ease-in-out infinite; }
+  .float-y.d2 { animation-delay: -2s; } .float-y.d3 { animation-delay: -4s; }
+  @keyframes floatY { 50% { transform: translateY(-10px); } }
+
+  /* Spotlight cards */
+  .spot { position: relative; isolation: isolate; }
+  .spot::before { content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .35s; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(0,168,204,.13), transparent 42%); }
+  .spot::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0; transition: opacity .35s; background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(0,196,159,.85), transparent 45%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+  .spot:hover::before, .spot:hover::after { opacity: 1; }
+  .lift { transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s; }
+  .lift:hover { transform: translateY(-4px); box-shadow: 0 2px 6px rgba(10,37,64,.05), 0 28px 56px -22px rgba(10,37,64,.3); }
+  .arrow-link svg { transition: transform .25s; }
+  .group:hover .arrow-link svg, .arrow-link:hover svg { transform: translateX(4px); }
+
+  /* Tabs */
+  .tab-btn { position: relative; display: inline-flex; align-items: center; gap: .55rem; padding: .7rem 1.05rem; border-radius: 999px; font-size: .9rem; font-weight: 600; color: rgb(var(--muted)); white-space: nowrap; transition: color .2s, background .2s; }
+  .tab-btn:hover { color: rgb(var(--ink)); background: rgb(var(--surface)); }
+  .tab-btn[aria-selected="true"] { color: #fff; background: #0A2540; box-shadow: 0 10px 24px -12px rgba(10,37,64,.7); }
+  .tab-btn svg { width: 17px; height: 17px; }
+  .no-scrollbar { scrollbar-width: none; } .no-scrollbar::-webkit-scrollbar { display: none; }
+  .thin-scroll { scrollbar-width: thin; scrollbar-color: rgb(var(--line)) transparent; }
+
+  /* Segmented */
+  .seg { position: relative; display: inline-flex; padding: 5px; border-radius: 999px; background: rgb(var(--surface)); border: 1px solid rgb(var(--line)); box-shadow: 0 1px 2px rgba(10,37,64,.05); max-width: 100%; }
+  .seg-ind { position: absolute; top: 5px; bottom: 5px; left: 5px; border-radius: 999px; background: #0A2540; transition: transform .45s cubic-bezier(.2,.9,.2,1), width .45s cubic-bezier(.2,.9,.2,1); }
+  .seg-btn { position: relative; z-index: 1; padding: .62rem 1.05rem; border-radius: 999px; font-size: .88rem; font-weight: 600; color: rgb(var(--muted)); transition: color .3s; white-space: nowrap; }
+  .seg-btn[aria-checked="true"] { color: #fff; }
+
+  /* Map */
+  .pin { cursor: pointer; }
+  .pin .pin-pulse { transform-box: fill-box; transform-origin: center; animation: pulse 2.6s ease-out infinite; fill: #00C49F; opacity: 0; }
+  .pin .pin-dot { fill: #0A2540; stroke: #fff; stroke-width: 2.5; transition: fill .2s, r .2s; }
+  .pin.is-hot .pin-dot, .pin:hover .pin-dot { fill: #00A8CC; }
+  .pin.is-dim { opacity: .28; }
+  .pin.is-dim .pin-pulse { animation: none; }
+  .pin text { font: 700 10px Inter, system-ui, sans-serif; fill: #fff; pointer-events: none; }
+  @keyframes pulse { 0% { transform: scale(.4); opacity: .55; } 100% { transform: scale(2.4); opacity: 0; } }
+  .arc { fill: none; stroke: url(#arcGrad); stroke-width: 1.4; stroke-dasharray: 3 7; animation: dash 14s linear infinite; opacity: .75; }
+  @keyframes dash { to { stroke-dashoffset: -200; } }
+  .chip { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem .8rem; border-radius: 999px; font-size: .82rem; font-weight: 600; border: 1px solid rgb(var(--line)); color: rgb(var(--ink) / .85); background: rgb(var(--surface)); transition: all .2s; }
+  .chip svg { width: 15px; height: 15px; }
+  .chip:hover { border-color: rgba(0,168,204,.5); }
+  .chip[aria-pressed="true"] { background: rgba(0,196,159,.12); border-color: #00A383; color: #047857; }
+  :root[data-theme="dark"] .chip[aria-pressed="true"] { color: #5EEAD4; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .chip[aria-pressed="true"] { color: #5EEAD4; } }
+  .fac-item { transition: background .2s, border-color .2s, transform .2s; }
+  .fac-item:hover, .fac-item.is-hot { background: rgb(var(--soft)); border-color: rgba(0,168,204,.45); }
+  .tag { display: inline-flex; align-items: center; gap: .25rem; padding: .15rem .5rem; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgb(var(--soft)); color: rgb(var(--muted)); }
+  .tag svg { width: 12px; height: 12px; }
+
+  /* ECG */
+  .ecg { stroke-dasharray: 600; stroke-dashoffset: 600; animation: ecg 3.2s linear infinite; }
+  @keyframes ecg { to { stroke-dashoffset: -600; } }
+  .bar-anim { transform-origin: bottom; animation: barH 2.4s ease-in-out infinite alternate; }
+  @keyframes barH { from { transform: scaleY(.35); } to { transform: scaleY(1); } }
+
+  /* Drawer */
+  #drawer .drawer-overlay { opacity: 0; transition: opacity .3s; }
+  #drawer .drawer-panel { transform: translateX(100%); transition: transform .4s cubic-bezier(.2,.9,.2,1); }
+  #drawer.open { pointer-events: auto; }
+  #drawer.open .drawer-overlay { opacity: 1; }
+  #drawer.open .drawer-panel { transform: translateX(0); }
+  .acc-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
+  .acc-body > div { overflow: hidden; }
+  .acc.open .acc-body { grid-template-rows: 1fr; }
+  .acc.open .acc-chev { transform: rotate(180deg); }
+
+  /* Toast */
+  #toast { position: fixed; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 22px); z-index: 80; transform: translate(-50%, 24px); opacity: 0; pointer-events: none; transition: all .35s cubic-bezier(.2,.9,.2,1); max-width: calc(100vw - 32px); }
+  #toast.show { transform: translate(-50%, 0); opacity: 1; }
+  #toTop { position: fixed; right: 18px; bottom: calc(env(safe-area-inset-bottom, 0px) + 18px); z-index: 45; opacity: 0; transform: translateY(12px); pointer-events: none; transition: all .3s; }
+  #toTop.show { opacity: 1; transform: none; pointer-events: auto; }
+</style>
+</head>
+<body class="font-sans">
+
+<a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-navy focus:px-4 focus:py-2 focus:text-white">Przejdź do treści</a>
+
+<!-- ============ HEADER ============ -->
+<header id="site-header" class="site-header">
+  <div class="topbar bg-navy-900 text-white/75 text-[12.5px]">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-10 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-5 min-w-0">
+        <a href="tel:+48223322888" class="flex items-center gap-2 hover:text-white transition-colors whitespace-nowrap">
+          <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full rounded-full bg-mint opacity-75 animate-ping"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-mint"></span></span>
+          <span data-i18n="top_hotline">Infolinia 24/7</span>
+          <strong class="text-white font-semibold">22 33 22 888</strong>
+        </a>
+        <a href="#" class="hidden md:flex items-center gap-1.5 hover:text-white transition-colors"><i data-lucide="stethoscope" class="w-3.5 h-3.5"></i><span data-i18n="top_duty">Linia dyżurna lekarza</span></a>
+        <a href="#placowki" class="hidden lg:flex items-center gap-1.5 hover:text-white transition-colors"><i data-lucide="map-pin" class="w-3.5 h-3.5"></i><span data-i18n="top_find">Znajdź placówkę</span></a>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="#" class="hidden sm:flex items-center gap-1.5 hover:text-white transition-colors"><i data-lucide="monitor-smartphone" class="w-3.5 h-3.5"></i><span data-i18n="top_portal">e-Portal pacjenta</span></a>
+        <div class="flex items-center rounded-full bg-white/10 p-0.5" role="group" aria-label="Wybór języka">
+          <button type="button" class="lang-btn is-active" data-lang="pl" aria-pressed="true">PL</button>
+          <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mainbar" class="mainbar relative">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-[72px] flex items-center gap-3 lg:gap-5">
+      <a href="#top" class="flex items-center gap-2.5 shrink-0" aria-label="LUX MED — strona główna">
+        <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true">
+          <defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00A8CC"/><stop offset="1" stop-color="#00C49F"/></linearGradient></defs>
+          <rect width="40" height="40" rx="12" fill="#0A2540"/>
+          <path d="M20 10v20M10 20h20" stroke="url(#lg1)" stroke-width="5.5" stroke-linecap="round"/>
+          <circle cx="30.5" cy="9.5" r="3" fill="#00C49F"/>
+        </svg>
+        <span class="leading-none">
+          <span class="block text-[19px] font-extrabold tracking-tight text-ink">LUX MED</span>
+          <span class="block text-[10.5px] font-medium text-muted mt-1" data-i18n="logo_sub">Opieka medyczna</span>
+        </span>
+      </a>
+
+      <nav id="desktop-nav" class="hidden lg:flex items-center gap-0.5 ml-2" aria-label="Główna nawigacja"></nav>
+      <div class="flex-1"></div>
+
+      <div class="relative hidden md:block lg:hidden xl:block w-full max-w-[250px]" id="hs-wrap">
+        <label class="sr-only" for="header-search">Szukaj w serwisie</label>
+        <div class="field !h-[42px] !rounded-full !px-3.5">
+          <i data-lucide="search"></i>
+          <input id="header-search" type="search" autocomplete="off" placeholder="Szukaj lekarza, badania…" data-i18n-ph="hs_ph" role="combobox" aria-expanded="false" aria-controls="hs-list" aria-autocomplete="list">
+          <kbd class="hidden xl:inline text-[10px] font-semibold text-muted border border-line rounded-md px-1.5 py-0.5">/</kbd>
+        </div>
+        <ul id="hs-list" class="suggest" role="listbox"></ul>
+      </div>
+      <button type="button" id="lg-search" class="icon-btn hidden lg:inline-flex xl:hidden" aria-label="Szukaj"><i data-lucide="search" class="w-[18px] h-[18px]"></i></button>
+
+      <a href="#" class="btn-ghost hidden sm:inline-flex"><i data-lucide="log-in" class="w-4 h-4"></i><span data-i18n="cta_portal">MojePortal</span></a>
+      <a href="#szukaj" class="btn-primary !px-4 sm:!px-5"><i data-lucide="calendar-plus" class="w-4 h-4"></i><span class="hidden sm:inline" data-i18n="cta_book">Umów wizytę</span><span class="sm:hidden" data-i18n="cta_book_s">Umów</span></a>
+      <button type="button" id="menu-open" class="icon-btn lg:hidden" aria-label="Otwórz menu" aria-controls="drawer" aria-expanded="false"><i data-lucide="menu" class="w-5 h-5"></i></button>
+    </div>
+
+    <div id="mega" class="mega absolute left-0 right-0 top-full hidden lg:block pt-2" aria-hidden="true">
+      <div class="mx-auto max-w-7xl px-8">
+        <div id="mega-panel" class="glass rounded-[28px] shadow-lift p-6"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile drawer -->
+<div id="drawer" class="fixed inset-0 z-[60] lg:hidden pointer-events-none" aria-hidden="true">
+  <div class="drawer-overlay absolute inset-0 bg-navy-900/55 backdrop-blur-sm" data-close></div>
+  <aside class="drawer-panel absolute right-0 top-0 h-full w-[90%] max-w-sm bg-surface shadow-2xl flex flex-col" style="padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)" aria-label="Menu mobilne">
+    <div class="flex items-center justify-between px-5 h-[68px] border-b border-line">
+      <span class="text-lg font-extrabold tracking-tight">LUX MED</span>
+      <button type="button" class="icon-btn" data-close aria-label="Zamknij menu"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="px-5 pt-4 relative">
+      <div class="field !h-12">
+        <i data-lucide="search"></i>
+        <input id="drawer-search" type="search" autocomplete="off" placeholder="Szukaj lekarza, badania…" data-i18n-ph="hs_ph" aria-controls="ds-list">
+      </div>
+      <ul id="ds-list" class="suggest !left-5 !right-5" role="listbox"></ul>
+    </div>
+    <nav id="drawer-nav" class="flex-1 overflow-y-auto px-3 py-3 thin-scroll" aria-label="Nawigacja mobilna"></nav>
+    <div class="p-5 border-t border-line space-y-3">
+      <a href="#szukaj" class="btn-primary w-full" data-close-link><i data-lucide="calendar-plus" class="w-4 h-4"></i><span data-i18n="cta_book">Umów wizytę</span></a>
+      <a href="#" class="btn-ghost w-full justify-center"><i data-lucide="log-in" class="w-4 h-4"></i><span data-i18n="cta_portal">MojePortal</span></a>
+      <a href="tel:+48223322888" class="flex items-center justify-center gap-2 text-sm text-muted pt-1"><i data-lucide="phone" class="w-4 h-4"></i>22 33 22 888 · całą dobę</a>
+    </div>
+  </aside>
+</div>
+
+<main id="main">
+
+<!-- ============ HERO ============ -->
+<section id="top" class="relative overflow-hidden">
+  <div class="absolute inset-0 grid-bg pointer-events-none" aria-hidden="true"></div>
+  <div class="absolute -top-40 -left-32 w-[520px] h-[520px] rounded-full bg-aqua/15 blur-3xl pointer-events-none hero-blob" aria-hidden="true"></div>
+  <div class="absolute top-40 right-[-160px] w-[460px] h-[460px] rounded-full bg-mint/15 blur-3xl pointer-events-none hero-blob" aria-hidden="true"></div>
+
+  <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 lg:pt-20 pb-16 lg:pb-24 grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+    <div class="lg:col-span-6 xl:col-span-6">
+      <a href="#" class="h-in inline-flex items-center gap-2 rounded-full glass shadow-soft pl-1.5 pr-3.5 py-1.5 text-[13px] font-medium text-ink/85 hover:text-ink transition group">
+        <span class="rounded-full bg-mint/15 text-jade px-2 py-0.5 text-[11.5px] font-semibold" data-i18n="hero_new">Nowość</span>
+        <span data-i18n="hero_eyebrow">Lekarz na wideo średnio w 5 minut</span>
+        <i data-lucide="chevron-right" class="w-4 h-4 opacity-60 group-hover:translate-x-0.5 transition"></i>
+      </a>
+      <h1 class="h-in mt-6 text-[40px] leading-[1.04] sm:text-[56px] lg:text-[60px] xl:text-[68px] font-extrabold tracking-[-0.035em] text-ink" data-i18n="hero_title">Nowoczesny wymiar opieki zdrowotnej</h1>
+      <p class="h-in mt-5 text-[17px] sm:text-lg leading-relaxed text-muted max-w-xl" data-i18n="hero_sub">Umów wizytę, odbierz e-receptę i sprawdź wyniki w jednym miejscu. Ponad 4 000 lekarzy, własne szpitale i diagnostyka w całej Polsce.</p>
+
+      <form id="szukaj" class="h-in mt-8 glass rounded-[26px] p-2.5 shadow-lift" autocomplete="off" role="search" aria-label="Wyszukaj lekarza lub usługę">
+        <div class="grid gap-2.5 sm:grid-cols-[1.45fr_1fr_auto]">
+          <div class="relative">
+            <label for="q-what" class="sr-only" data-i18n="f_what_label">Kogo lub czego szukasz?</label>
+            <div class="field" id="f-what">
+              <i data-lucide="stethoscope"></i>
+              <input id="q-what" type="text" placeholder="Kogo lub czego szukasz?" data-i18n-ph="f_what_ph" role="combobox" aria-expanded="false" aria-controls="what-list" aria-autocomplete="list">
+            </div>
+            <ul id="what-list" class="suggest" role="listbox"></ul>
+          </div>
+          <div class="relative">
+            <label for="q-city" class="sr-only" data-i18n="f_city_label">Miasto</label>
+            <div class="field">
+              <i data-lucide="map-pin"></i>
+              <input id="q-city" type="text" placeholder="Miasto" data-i18n-ph="f_city_ph" role="combobox" aria-expanded="false" aria-controls="city-list" aria-autocomplete="list">
+            </div>
+            <ul id="city-list" class="suggest" role="listbox"></ul>
+          </div>
+          <button type="submit" class="btn-primary !h-[54px] !rounded-2xl !px-6 !text-[15px]"><i data-lucide="search" class="w-[18px] h-[18px]"></i><span data-i18n="f_btn">Szukaj</span></button>
+        </div>
+      </form>
+
+      <div class="h-in mt-5 flex flex-wrap items-center gap-2 text-sm">
+        <span class="text-muted mr-1" data-i18n="hero_popular">Często wybierane:</span>
+        <button type="button" class="pop-tag rounded-full border border-line bg-surface/70 px-3 py-1.5 font-medium text-ink/80 hover:border-aqua/60 hover:text-aqua-dark transition">Internista</button>
+        <button type="button" class="pop-tag rounded-full border border-line bg-surface/70 px-3 py-1.5 font-medium text-ink/80 hover:border-aqua/60 hover:text-aqua-dark transition">Dermatolog</button>
+        <button type="button" class="pop-tag rounded-full border border-line bg-surface/70 px-3 py-1.5 font-medium text-ink/80 hover:border-aqua/60 hover:text-aqua-dark transition">USG jamy brzusznej</button>
+        <button type="button" class="pop-tag rounded-full border border-line bg-surface/70 px-3 py-1.5 font-medium text-ink/80 hover:border-aqua/60 hover:text-aqua-dark transition">Pediatra</button>
+      </div>
+
+      <div class="h-in mt-8 flex items-center gap-4">
+        <div class="flex -space-x-2.5" aria-hidden="true">
+          <span class="w-9 h-9 rounded-full ring-2 ring-canvas bg-gradient-to-br from-aqua to-navy-600 grid place-items-center text-white text-xs font-bold">AK</span>
+          <span class="w-9 h-9 rounded-full ring-2 ring-canvas bg-gradient-to-br from-mint to-jade grid place-items-center text-white text-xs font-bold">MN</span>
+          <span class="w-9 h-9 rounded-full ring-2 ring-canvas bg-gradient-to-br from-navy-600 to-navy grid place-items-center text-white text-xs font-bold">PW</span>
+        </div>
+        <div class="text-sm leading-tight">
+          <div class="flex items-center gap-1 text-amber-500" aria-label="Ocena 4,8 na 5"><i data-lucide="star" class="w-4 h-4 fill-current"></i><i data-lucide="star" class="w-4 h-4 fill-current"></i><i data-lucide="star" class="w-4 h-4 fill-current"></i><i data-lucide="star" class="w-4 h-4 fill-current"></i><i data-lucide="star" class="w-4 h-4 fill-current"></i><span class="ml-1 font-semibold text-ink">4,8</span></div>
+          <p class="text-muted mt-1" data-i18n="hero_rating">średnia ocena wizyt w aplikacji</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3D -->
+    <div class="lg:col-span-6 xl:col-span-6 relative">
+      <div id="dna" class="dna-panel relative rounded-[32px] overflow-hidden aspect-[4/5] sm:aspect-[5/4] lg:aspect-[5/6] xl:aspect-square shadow-lift">
+        <canvas id="dna-canvas" class="absolute inset-0 w-full h-full" aria-label="Animowana, interaktywna struktura DNA" role="img"></canvas>
+        <div class="dna-fallback" aria-hidden="true"></div>
+        <div class="absolute left-5 top-5 flex items-center gap-2 rounded-full bg-white/10 border border-white/10 px-3 py-1.5 text-[12px] font-medium text-white/85 backdrop-blur-md">
+          <span class="relative flex h-2 w-2"><span class="absolute inline-flex h-full w-full rounded-full bg-mint opacity-75 animate-ping"></span><span class="relative inline-flex h-2 w-2 rounded-full bg-mint"></span></span>
+          <span data-i18n="dna_label">Diagnostyka wspierana przez AI</span>
+        </div>
+        <p class="hidden md:flex absolute right-5 top-5 items-center gap-1.5 text-[12px] text-white/55"><i data-lucide="mouse-pointer-2" class="w-3.5 h-3.5"></i><span data-i18n="dna_hint">Porusz kursorem</span></p>
+      </div>
+
+      <!-- Floating badges -->
+      <div class="badge absolute left-3 top-16 sm:-left-5 sm:top-20 z-10">
+        <div class="float-y glass rounded-2xl shadow-lift px-4 py-3 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-xl bg-aqua/15 text-aqua-dark"><i data-lucide="users" class="w-5 h-5"></i></span>
+          <span class="leading-tight"><span class="block text-lg sm:text-xl font-extrabold tracking-tight text-ink"><span data-count="2500000" data-prefix="+">+0</span></span><span class="block text-[12px] text-muted" data-i18n="b_pat">Pacjentów</span></span>
+        </div>
+      </div>
+      <div class="badge absolute right-3 bottom-24 sm:-right-5 sm:bottom-auto sm:top-1/2 z-10">
+        <div class="float-y d2 glass rounded-2xl shadow-lift px-4 py-3 flex items-center gap-3">
+          <span class="grid place-items-center w-10 h-10 rounded-xl bg-mint/15 text-jade"><i data-lucide="stethoscope" class="w-5 h-5"></i></span>
+          <span class="leading-tight"><span class="block text-lg sm:text-xl font-extrabold tracking-tight text-ink"><span data-count="4000" data-prefix="+">+0</span></span><span class="block text-[12px] text-muted" data-i18n="b_doc">Lekarzy</span></span>
+        </div>
+      </div>
+      <div class="badge absolute left-3 bottom-4 sm:left-10 sm:-bottom-6 z-10">
+        <div class="float-y d3 glass rounded-2xl shadow-lift px-4 py-3 flex items-center gap-3">
+          <span class="relative grid place-items-center w-10 h-10 rounded-xl bg-navy text-white"><i data-lucide="clock-3" class="w-5 h-5"></i><span class="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-mint ring-2 ring-white"></span></span>
+          <span class="leading-tight"><span class="block text-lg sm:text-xl font-extrabold tracking-tight text-ink">24/7</span><span class="block text-[12px] text-muted" data-i18n="b_24">Dostępność</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ QUICK ACTIONS ============ -->
+<section aria-labelledby="qa-title" class="relative">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-20 lg:pb-28">
+    <div class="flex flex-wrap items-end justify-between gap-4 mb-7">
+      <h2 id="qa-title" class="text-2xl sm:text-[28px] font-bold tracking-tight text-ink" data-i18n="qa_title">Załatw sprawę w kilka kliknięć</h2>
+      <a href="#" class="arrow-link inline-flex items-center gap-1.5 text-sm font-semibold text-aqua-dark hover:text-navy dark:hover:text-white transition">Wszystkie usługi online <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+    </div>
+    <div id="qa-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></div>
+  </div>
+</section>
+
+<!-- ============ SERVICES TABS ============ -->
+<section id="uslugi" aria-labelledby="tabs-title" class="relative bg-soft/70 border-y border-line/70">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+    <div class="grid lg:grid-cols-12 gap-6 items-end">
+      <div class="lg:col-span-7 reveal">
+        <p class="text-sm font-semibold text-aqua-dark mb-3" data-i18n="tabs_eyebrow">Kontrola zdrowia</p>
+        <h2 id="tabs-title" class="text-3xl sm:text-4xl lg:text-[46px] font-extrabold tracking-[-0.03em] leading-[1.08] text-ink" data-i18n="tabs_title">Jedna sieć, każda specjalizacja</h2>
+      </div>
+      <p class="lg:col-span-5 text-muted text-[17px] leading-relaxed reveal" data-i18n="tabs_sub">Od profilaktyki, przez diagnostykę, po leczenie szpitalne. Wybierz obszar, a pokażemy, jak wygląda opieka krok po kroku.</p>
+    </div>
+
+    <div class="mt-10 -mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto no-scrollbar">
+      <div id="tab-list" role="tablist" aria-label="Obszary opieki" class="inline-flex gap-1.5 p-1.5 rounded-full bg-canvas border border-line"></div>
+    </div>
+
+    <div id="tab-panel" role="tabpanel" tabindex="0" class="mt-8 grid lg:grid-cols-12 gap-6 lg:gap-10 items-stretch"></div>
+  </div>
+</section>
+
+<!-- ============ PRICING ============ -->
+<section id="pakiety" aria-labelledby="price-title" class="relative overflow-hidden">
+  <div class="absolute left-1/2 top-24 -translate-x-1/2 w-[900px] h-[500px] rounded-full bg-aqua/10 blur-3xl pointer-events-none" aria-hidden="true"></div>
+  <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+    <div class="text-center max-w-2xl mx-auto reveal">
+      <p class="text-sm font-semibold text-aqua-dark mb-3" data-i18n="price_eyebrow">Pakiety medyczne</p>
+      <h2 id="price-title" class="text-3xl sm:text-4xl lg:text-[46px] font-extrabold tracking-[-0.03em] leading-[1.08] text-ink" data-i18n="price_title">Przejrzyste ceny, bez gwiazdek</h2>
+      <p class="mt-4 text-muted text-[17px]" data-i18n="price_sub">Wybierz, dla kogo szukasz opieki. Każdy pakiet obejmuje konsultacje wideo 24/7 i aplikację pacjenta.</p>
+    </div>
+
+    <div class="mt-9 flex justify-center reveal">
+      <div class="seg overflow-x-auto no-scrollbar" role="radiogroup" aria-label="Typ klienta" id="seg">
+        <span class="seg-ind" id="seg-ind" aria-hidden="true"></span>
+        <button type="button" role="radio" class="seg-btn" data-mode="ind" aria-checked="true">Dla Osoby Prywatnej</button>
+        <button type="button" role="radio" class="seg-btn" data-mode="fam" aria-checked="false">Dla Rodziny</button>
+        <button type="button" role="radio" class="seg-btn" data-mode="b2b" aria-checked="false">Dla Firm (B2B)</button>
+      </div>
+    </div>
+    <p id="mode-note" class="mt-4 text-center text-sm text-muted"></p>
+
+    <div id="plans" class="mt-10 lg:mt-14 grid gap-5 lg:gap-6 lg:grid-cols-3 items-stretch"></div>
+
+    <div class="mt-10 text-center">
+      <button type="button" id="cmp-toggle" class="btn-ghost" aria-expanded="false" aria-controls="cmp-wrap"><i data-lucide="table-2" class="w-4 h-4"></i><span>Porównaj wszystkie funkcje</span><i data-lucide="chevron-down" class="w-4 h-4 transition-transform" id="cmp-chev"></i></button>
+    </div>
+    <div id="cmp-wrap" class="acc-body mt-6"><div>
+      <div class="overflow-x-auto thin-scroll rounded-3xl border border-line bg-surface shadow-soft">
+        <table class="w-full min-w-[640px] text-sm">
+          <caption class="sr-only">Porównanie pakietów medycznych</caption>
+          <thead><tr class="text-left border-b border-line">
+            <th scope="col" class="py-4 px-5 font-semibold text-muted w-[40%]">Zakres</th>
+            <th scope="col" class="py-4 px-4 font-bold text-ink">Podstawowy</th>
+            <th scope="col" class="py-4 px-4 font-bold text-ink bg-aqua/[.06]">Standard Premium</th>
+            <th scope="col" class="py-4 px-4 font-bold text-ink">VIP Gold</th>
+          </tr></thead>
+          <tbody id="cmp-body"></tbody>
+        </table>
+      </div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============ MAP ============ -->
+<section id="placowki" aria-labelledby="map-title" class="relative bg-soft/70 border-y border-line/70">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+    <div class="grid lg:grid-cols-12 gap-6 items-end mb-10">
+      <div class="lg:col-span-7 reveal">
+        <p class="text-sm font-semibold text-aqua-dark mb-3" data-i18n="map_eyebrow">Znajdź placówkę</p>
+        <h2 id="map-title" class="text-3xl sm:text-4xl lg:text-[46px] font-extrabold tracking-[-0.03em] leading-[1.08] text-ink" data-i18n="map_title">Blisko Ciebie, w całej Polsce</h2>
+      </div>
+      <p class="lg:col-span-5 text-muted text-[17px] leading-relaxed reveal">Filtruj po mieście i udogodnieniach. Kliknij punkt na mapie, aby zobaczyć placówki w danym mieście.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-5 rounded-[28px] bg-surface border border-line shadow-soft p-4 sm:p-5 flex flex-col min-h-0 reveal">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2.5">
+          <div class="field !h-12">
+            <i data-lucide="building-2"></i>
+            <label for="f-city" class="sr-only">Miasto</label>
+            <select id="f-city" class="appearance-none cursor-pointer"><option value="">Wszystkie miasta</option></select>
+            <i data-lucide="chevron-down" class="!w-4 !h-4 pointer-events-none"></i>
+          </div>
+          <div class="field !h-12">
+            <i data-lucide="search"></i>
+            <label for="f-q" class="sr-only">Nazwa lub ulica</label>
+            <input id="f-q" type="search" placeholder="Nazwa lub ulica">
+          </div>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Udogodnienia">
+          <button type="button" class="chip" data-f="p" aria-pressed="false"><i data-lucide="car"></i>Parking</button>
+          <button type="button" class="chip" data-f="d" aria-pressed="false"><i data-lucide="accessibility"></i>Dla niepełnosprawnych</button>
+          <button type="button" class="chip" data-f="h" aria-pressed="false"><i data-lucide="moon"></i>Czynne 24/7</button>
+          <button type="button" class="chip" data-f="m" aria-pressed="false"><i data-lucide="scan-line"></i>MR / TK</button>
+        </div>
+        <div class="mt-4 flex items-center justify-between text-sm">
+          <p class="text-muted" aria-live="polite"><strong id="fac-count" class="text-ink">0</strong> placówek</p>
+          <button type="button" id="f-reset" class="font-semibold text-aqua-dark hover:underline">Wyczyść filtry</button>
+        </div>
+        <ul id="fac-list" class="mt-3 space-y-2 overflow-y-auto thin-scroll pr-1 max-h-[420px] lg:max-h-[468px]"></ul>
+      </div>
+
+      <div class="lg:col-span-7 rounded-[28px] bg-surface border border-line shadow-soft p-4 sm:p-6 relative overflow-hidden reveal">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-2">
+          <div class="flex items-center gap-2 text-sm font-semibold text-ink"><i data-lucide="navigation" class="w-4 h-4 text-aqua-dark"></i><span id="map-caption">Cała Polska</span></div>
+          <div class="flex items-center gap-4 text-xs text-muted">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-navy dark:bg-white ring-2 ring-white"></span>Miasto z placówkami</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-aqua"></span>Wybrane</span>
+          </div>
+        </div>
+        <div id="map-wrap" class="relative mx-auto max-w-[620px]">
+          <svg id="map-svg" viewBox="0 0 640 620" class="w-full h-auto text-navy/25 dark:text-white/20" role="img" aria-label="Mapa placówek LUX MED w Polsce"></svg>
+          <div id="map-tip" class="absolute z-10 pointer-events-none opacity-0 transition-opacity duration-150 -translate-x-1/2 -translate-y-full rounded-xl bg-navy text-white text-xs px-3 py-2 shadow-lift whitespace-nowrap"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-3 mt-2">
+          <div class="rounded-2xl bg-soft p-3 sm:p-4"><p class="text-xl sm:text-2xl font-extrabold tracking-tight text-ink">300+</p><p class="text-xs text-muted mt-0.5">placówek</p></div>
+          <div class="rounded-2xl bg-soft p-3 sm:p-4"><p class="text-xl sm:text-2xl font-extrabold tracking-tight text-ink">90+</p><p class="text-xs text-muted mt-0.5">miast</p></div>
+          <div class="rounded-2xl bg-soft p-3 sm:p-4"><p class="text-xl sm:text-2xl font-extrabold tracking-tight text-ink">70%</p><p class="text-xs text-muted mt-0.5">z parkingiem</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WHY ============ -->
+<section id="dlaczego" aria-labelledby="why-title" class="relative">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
+    <div class="max-w-2xl reveal">
+      <p class="text-sm font-semibold text-aqua-dark mb-3" data-i18n="why_eyebrow">Dlaczego LUX MED</p>
+      <h2 id="why-title" class="text-3xl sm:text-4xl lg:text-[46px] font-extrabold tracking-[-0.03em] leading-[1.08] text-ink" data-i18n="why_title">Skala, która pracuje na Twoje zdrowie</h2>
+      <p class="mt-4 text-muted text-[17px] leading-relaxed">Łączymy technologię z doświadczeniem tysięcy specjalistów, żeby diagnoza była szybsza, a leczenie prostsze.</p>
+    </div>
+
+    <div id="why-grid" class="mt-12 grid gap-4 sm:gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:grid-rows-2 [perspective:1200px]">
+      <!-- AI -->
+      <article class="why-card spot lift sm:col-span-2 lg:row-span-2 rounded-[28px] p-7 sm:p-8 bg-navy text-white overflow-hidden flex flex-col relative">
+        <div class="absolute -right-24 -top-24 w-72 h-72 rounded-full bg-aqua/25 blur-3xl" aria-hidden="true"></div>
+        <span class="relative grid place-items-center w-12 h-12 rounded-2xl bg-white/10 border border-white/15"><i data-lucide="brain-circuit" class="w-6 h-6 text-mint"></i></span>
+        <h3 class="relative mt-6 text-2xl sm:text-[28px] font-bold tracking-tight">AI w diagnostyce obrazowej</h3>
+        <p class="relative mt-3 text-white/70 leading-relaxed max-w-md">Algorytmy analizują badania MR, TK i RTG jako drugi czytelnik. Radiolog dostaje wskazania zmian do weryfikacji, a Ty — szybszy i dokładniejszy opis.</p>
+        <div class="relative mt-auto pt-8">
+          <div class="rounded-2xl bg-white/[.06] border border-white/10 p-4 sm:p-5">
+            <div class="flex items-center justify-between text-xs text-white/60 mb-3"><span>Analiza w czasie rzeczywistym</span><span class="flex items-center gap-1.5 text-mint"><span class="w-1.5 h-1.5 rounded-full bg-mint animate-pulse"></span>aktywna</span></div>
+            <svg viewBox="0 0 400 80" class="w-full h-16" aria-hidden="true">
+              <path d="M0 40 H90 L105 40 L115 14 L128 66 L140 28 L150 40 H230 L245 40 L255 8 L268 72 L280 30 L290 40 H400" fill="none" stroke="rgba(255,255,255,.12)" stroke-width="2"/>
+              <path class="ecg" d="M0 40 H90 L105 40 L115 14 L128 66 L140 28 L150 40 H230 L245 40 L255 8 L268 72 L280 30 L290 40 H400" fill="none" stroke="#00C49F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="mt-3 grid grid-cols-3 gap-3 text-center">
+              <div><p class="text-xl font-extrabold"><span data-count="48">0</span> h</p><p class="text-[11px] text-white/55">czas opisu</p></div>
+              <div><p class="text-xl font-extrabold"><span data-count="30">0</span>%</p><p class="text-[11px] text-white/55">szybciej</p></div>
+              <div><p class="text-xl font-extrabold">2×</p><p class="text-[11px] text-white/55">weryfikacja</p></div>
+            </div>
+          </div>
+        </div>
+      </article>
+      <!-- Tele -->
+      <article class="why-card spot lift rounded-[28px] p-6 bg-surface border border-line shadow-soft flex flex-col">
+        <div class="flex items-start justify-between">
+          <span class="grid place-items-center w-11 h-11 rounded-2xl bg-aqua/12 text-aqua-dark bg-aqua/10"><i data-lucide="video" class="w-5 h-5"></i></span>
+          <svg width="56" height="56" viewBox="0 0 56 56" aria-hidden="true" class="-mt-1 -mr-1"><circle cx="28" cy="28" r="23" fill="none" stroke="rgb(var(--line))" stroke-width="5"/><circle id="tele-ring" cx="28" cy="28" r="23" fill="none" stroke="#00A8CC" stroke-width="5" stroke-linecap="round" stroke-dasharray="144.5" stroke-dashoffset="144.5" transform="rotate(-90 28 28)"/></svg>
+        </div>
+        <h3 class="mt-5 text-lg font-bold tracking-tight text-ink">Telemedycyna w 5 minut</h3>
+        <p class="mt-2 text-sm text-muted leading-relaxed">Wideo, czat lub telefon — o każdej porze, także w święta.</p>
+      </article>
+      <!-- Hospitals -->
+      <article class="why-card spot lift rounded-[28px] p-6 bg-surface border border-line shadow-soft flex flex-col">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-mint/10 text-jade"><i data-lucide="building-2" class="w-5 h-5"></i></span>
+        <p class="mt-5 text-3xl font-extrabold tracking-tight text-ink"><span data-count="12">0</span></p>
+        <h3 class="mt-1 text-lg font-bold tracking-tight text-ink">Własne szpitale</h3>
+        <p class="mt-2 text-sm text-muted leading-relaxed">Planowe operacje z koordynatorem i rehabilitacją.</p>
+      </article>
+      <!-- Quality -->
+      <article class="why-card spot lift rounded-[28px] p-6 bg-surface border border-line shadow-soft flex flex-col">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-navy/5 dark:bg-white/10 text-ink"><i data-lucide="award" class="w-5 h-5"></i></span>
+        <h3 class="mt-5 text-lg font-bold tracking-tight text-ink">Najwyższa jakość</h3>
+        <p class="mt-2 text-sm text-muted leading-relaxed">Certyfikowane procesy, akredytacje i audyty kliniczne.</p>
+        <div class="mt-auto pt-4 flex flex-wrap gap-1.5"><span class="tag">ISO 9001</span><span class="tag">ISO 27001</span><span class="tag">Akredytacja CMJ</span></div>
+      </article>
+      <!-- Security -->
+      <article class="why-card spot lift rounded-[28px] p-6 bg-gradient-to-br from-aqua/10 to-mint/10 border border-line shadow-soft flex flex-col">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl bg-surface text-aqua-dark shadow-soft"><i data-lucide="shield-check" class="w-5 h-5"></i></span>
+        <h3 class="mt-5 text-lg font-bold tracking-tight text-ink">Dane pod ochroną</h3>
+        <p class="mt-2 text-sm text-muted leading-relaxed">Szyfrowanie end-to-end, dwuetapowe logowanie i pełna zgodność z RODO.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="relative bg-navy-900 text-white/70 overflow-hidden">
+  <div class="absolute -top-40 left-1/3 w-[700px] h-[400px] rounded-full bg-aqua/10 blur-3xl pointer-events-none" aria-hidden="true"></div>
+  <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 lg:pt-20">
+    <!-- App band -->
+    <div class="reveal rounded-[32px] bg-gradient-to-br from-navy-700 via-navy to-navy-900 border border-white/10 p-7 sm:p-10 lg:p-12 grid lg:grid-cols-12 gap-10 items-center overflow-hidden">
+      <div class="lg:col-span-7">
+        <h2 class="text-3xl sm:text-4xl font-extrabold tracking-[-0.03em] text-white leading-tight" data-i18n="app_title">Twoje zdrowie w kieszeni</h2>
+        <p class="mt-4 text-white/70 text-[17px] leading-relaxed max-w-lg">Umawiaj wizyty, odbieraj e-recepty, sprawdzaj wyniki i rozmawiaj z lekarzem wideo — w aplikacji LUX MED.</p>
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a href="#" class="group inline-flex items-center gap-3 rounded-2xl bg-white text-navy pl-4 pr-5 py-3 hover:-translate-y-0.5 hover:shadow-glow transition">
+            <i data-lucide="apple" class="w-6 h-6"></i><span class="leading-tight text-left"><span class="block text-[10.5px] font-medium opacity-70">Pobierz z</span><span class="block text-[15px] font-bold">App Store</span></span>
+          </a>
+          <a href="#" class="group inline-flex items-center gap-3 rounded-2xl bg-white/10 border border-white/15 text-white pl-4 pr-5 py-3 hover:-translate-y-0.5 hover:bg-white/15 transition">
+            <i data-lucide="play" class="w-6 h-6 fill-current"></i><span class="leading-tight text-left"><span class="block text-[10.5px] font-medium opacity-70">Pobierz z</span><span class="block text-[15px] font-bold">Google Play</span></span>
+          </a>
+        </div>
+      </div>
+      <div class="lg:col-span-5 flex justify-center lg:justify-end">
+        <div class="relative w-[230px] h-[300px] sm:h-[330px] rounded-[36px] bg-navy-900 border-[6px] border-white/10 shadow-lift p-4 -mb-24 sm:-mb-28 lg:-mb-32 rotate-[-4deg]" aria-hidden="true">
+          <div class="mx-auto w-16 h-1.5 rounded-full bg-white/15"></div>
+          <p class="mt-4 text-[11px] text-white/50">Dzień dobry,</p>
+          <p class="text-sm font-bold text-white">Anna</p>
+          <div class="mt-3 rounded-2xl bg-gradient-to-br from-aqua to-mint p-3 text-navy-900">
+            <p class="text-[10px] font-semibold opacity-75">Najbliższa wizyta</p>
+            <p class="text-sm font-bold">Kardiolog · jutro 9:30</p>
+            <p class="text-[10px] opacity-75 mt-0.5">CM Puławska, gab. 214</p>
+          </div>
+          <div class="mt-2 grid grid-cols-2 gap-2">
+            <div class="rounded-xl bg-white/[.07] p-2.5"><i data-lucide="pill" class="w-4 h-4 text-mint"></i><p class="text-[10px] text-white/80 mt-1.5">E-recepta</p></div>
+            <div class="rounded-xl bg-white/[.07] p-2.5"><i data-lucide="flask-conical" class="w-4 h-4 text-aqua"></i><p class="text-[10px] text-white/80 mt-1.5">3 nowe wyniki</p></div>
+            <div class="rounded-xl bg-white/[.07] p-2.5"><i data-lucide="video" class="w-4 h-4 text-aqua"></i><p class="text-[10px] text-white/80 mt-1.5">Wideo 24/7</p></div>
+            <div class="rounded-xl bg-white/[.07] p-2.5"><i data-lucide="qr-code" class="w-4 h-4 text-mint"></i><p class="text-[10px] text-white/80 mt-1.5">Karta pacjenta</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links -->
+    <div class="mt-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-12">
+      <div class="lg:col-span-4">
+        <div class="flex items-center gap-2.5">
+          <svg width="36" height="36" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="12" fill="#fff" fill-opacity=".08"/><path d="M20 10v20M10 20h20" stroke="url(#lg1)" stroke-width="5.5" stroke-linecap="round"/><circle cx="30.5" cy="9.5" r="3" fill="#00C49F"/></svg>
+          <span class="text-xl font-extrabold tracking-tight text-white">LUX MED</span>
+        </div>
+        <p class="mt-4 text-sm leading-relaxed max-w-xs">Prywatna opieka medyczna dla pacjentów indywidualnych, rodzin i firm w całej Polsce.</p>
+        <a href="tel:+48223322888" class="mt-6 flex items-center gap-3 rounded-2xl bg-white/[.06] border border-white/10 p-4 hover:bg-white/10 transition max-w-xs">
+          <span class="grid place-items-center w-10 h-10 rounded-xl bg-mint/15 text-mint"><i data-lucide="phone-call" class="w-5 h-5"></i></span>
+          <span class="leading-tight"><span class="block text-xs text-white/55">Infolinia całodobowa</span><span class="block text-lg font-bold text-white">22 33 22 888</span></span>
+        </a>
+        <div class="mt-5 flex gap-2">
+          <a href="#" class="icon-btn !border-white/15 !bg-white/5 !text-white/80 hover:!text-white hover:!border-mint" aria-label="Facebook"><i data-lucide="facebook" class="w-4 h-4"></i></a>
+          <a href="#" class="icon-btn !border-white/15 !bg-white/5 !text-white/80 hover:!text-white hover:!border-mint" aria-label="Instagram"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+          <a href="#" class="icon-btn !border-white/15 !bg-white/5 !text-white/80 hover:!text-white hover:!border-mint" aria-label="LinkedIn"><i data-lucide="linkedin" class="w-4 h-4"></i></a>
+          <a href="#" class="icon-btn !border-white/15 !bg-white/5 !text-white/80 hover:!text-white hover:!border-mint" aria-label="YouTube"><i data-lucide="youtube" class="w-4 h-4"></i></a>
+        </div>
+      </div>
+      <nav class="lg:col-span-2" aria-label="Pacjenci"><h3 class="text-sm font-semibold text-white">Pacjenci</h3><ul class="mt-4 space-y-2.5 text-sm">
+        <li><a class="hover:text-white transition" href="#szukaj">Umów wizytę</a></li><li><a class="hover:text-white transition" href="#pakiety">Pakiety medyczne</a></li><li><a class="hover:text-white transition" href="#">Wyniki badań</a></li><li><a class="hover:text-white transition" href="#">E-Recepta</a></li><li><a class="hover:text-white transition" href="#">Cennik usług</a></li></ul></nav>
+      <nav class="lg:col-span-2" aria-label="Dla firm"><h3 class="text-sm font-semibold text-white">Dla Firm</h3><ul class="mt-4 space-y-2.5 text-sm">
+        <li><a class="hover:text-white transition" href="#">Abonamenty pracownicze</a></li><li><a class="hover:text-white transition" href="#">Medycyna pracy</a></li><li><a class="hover:text-white transition" href="#">Panel Pracodawcy</a></li><li><a class="hover:text-white transition" href="#">Wellbeing</a></li></ul></nav>
+      <nav class="lg:col-span-2" aria-label="O nas"><h3 class="text-sm font-semibold text-white">O nas</h3><ul class="mt-4 space-y-2.5 text-sm">
+        <li><a class="hover:text-white transition" href="#">Grupa LUX MED</a></li><li><a class="hover:text-white transition" href="#">Kariera</a></li><li><a class="hover:text-white transition" href="#">Dla mediów</a></li><li><a class="hover:text-white transition" href="#">Kontakt</a></li></ul></nav>
+      <div class="lg:col-span-2"><h3 class="text-sm font-semibold text-white">Jakość</h3>
+        <div class="mt-4 space-y-2.5">
+          <div class="flex items-center gap-2.5 rounded-xl border border-white/10 px-3 py-2"><i data-lucide="badge-check" class="w-5 h-5 text-mint"></i><span class="text-xs leading-tight"><b class="text-white block">ISO 9001:2015</b>Zarządzanie jakością</span></div>
+          <div class="flex items-center gap-2.5 rounded-xl border border-white/10 px-3 py-2"><i data-lucide="lock" class="w-5 h-5 text-aqua"></i><span class="text-xs leading-tight"><b class="text-white block">ISO/IEC 27001</b>Bezpieczeństwo danych</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-14 py-7 border-t border-white/10 flex flex-col lg:flex-row gap-4 lg:items-center justify-between text-[13px]">
+      <p>© <span id="year">2026</span> LUX MED. Prototyp koncepcyjny — nazwy placówek, lekarzy, ceny i statystyki są przykładowe.</p>
+      <ul class="flex flex-wrap gap-x-5 gap-y-2">
+        <li><a class="hover:text-white transition" href="#">Polityka prywatności</a></li>
+        <li><a class="hover:text-white transition" href="#">Regulamin</a></li>
+        <li><a class="hover:text-white transition" href="#">Cookies</a></li>
+        <li><a class="hover:text-white transition" href="#">RODO</a></li>
+        <li><a class="hover:text-white transition" href="#">Deklaracja dostępności</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<div id="toast" role="status" aria-live="polite" class="flex items-center gap-3 rounded-2xl bg-navy text-white text-sm px-4 py-3 shadow-lift border border-white/10"></div>
+<button type="button" id="toTop" class="icon-btn !w-12 !h-12 !rounded-2xl shadow-lift glass" aria-label="Wróć na górę"><i data-lucide="arrow-up" class="w-5 h-5"></i></button>
+
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const G = window.gsap;
+if (G && window.ScrollTrigger) G.registerPlugin(ScrollTrigger);
+const icons = () => { try { window.lucide && lucide.createIcons(); } catch (e) {} };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l');
+const fmt = n => Math.round(n).toLocaleString('pl-PL');
+
+/* ---------- Toast ---------- */
+let toastT;
+function toast(html, icon = 'check-circle-2') {
+  const t = $('#toast');
+  t.innerHTML = `<span class="grid place-items-center w-8 h-8 rounded-xl bg-mint/20 text-mint shrink-0"><i data-lucide="${icon}" class="w-4 h-4"></i></span><span>${html}</span>`;
+  icons(); t.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 3800);
+}
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href="#"]');
+  if (!a) return;
+  e.preventDefault();
+  const label = (a.getAttribute('aria-label') || a.textContent).replace(/\s+/g, ' ').trim();
+  toast(`<b>${esc(label)}</b> — w pełnej wersji serwisu otworzy się tutaj odpowiednia strona.`, 'external-link');
+});
+
+/* ---------- Data ---------- */
+const MENU = [
+  { k: 'abonamenty', pl: 'Abonamenty', en: 'Plans', cols: [
+    { h: 'Dla pacjentów', l: [['user-round', 'Pakiet Indywidualny', 'Kompleksowa opieka dla jednej osoby'], ['users', 'Pakiet Rodzinny', 'Partner i dzieci w jednej umowie'], ['baby', 'Pakiet Dziecięcy', 'Pediatra i szczepienia bez kolejek'], ['heart-handshake', 'Pakiet Senior 60+', 'Opieka koordynowana i geriatria']] },
+    { h: 'Rozszerzenia', l: [['smile', 'Stomatologia', 'Przeglądy, higienizacja, leczenie'], ['bed', 'Ubezpieczenie szpitalne', 'Planowe operacje w naszych szpitalach'], ['brain', 'Zdrowie psychiczne', 'Psycholog i psychiatra online']] }],
+    promo: { i: 'badge-percent', t: 'Pakiet Rodzinny −15%', d: 'Dołącz bliskich do abonamentu do końca miesiąca.', c: 'Zobacz pakiety', href: '#pakiety' } },
+  { k: 'placowki', pl: 'Placówki', en: 'Clinics', cols: [
+    { h: 'Znajdź', l: [['map-pin', 'Mapa placówek', 'Ponad 300 lokalizacji w Polsce'], ['building-2', 'Szpitale LUX MED', 'Chirurgia, ortopedia, onkologia'], ['moon', 'Placówki 24/7', 'Pomoc nocna i świąteczna']] },
+    { h: 'Udogodnienia', l: [['car', 'Parking dla pacjentów', 'Miejsca przy placówce'], ['accessibility', 'Dostępność', 'Podjazdy, windy, pętle indukcyjne'], ['baby', 'Strefy dla dzieci', 'Kąciki zabaw i przewijaki']] }],
+    promo: { i: 'navigation', t: 'Najbliższa placówka', d: 'Filtruj placówki po mieście, parkingu i dostępności.', c: 'Otwórz mapę', href: '#placowki' } },
+  { k: 'lekarze', pl: 'Lekarze', en: 'Doctors', cols: [
+    { h: 'Specjalizacje', l: [['heart-pulse', 'Kardiologia', 'Echo serca, Holter, próby wysiłkowe'], ['baby', 'Pediatria', 'Opieka od pierwszych dni życia'], ['bone', 'Ortopedia', 'Urazy, kręgosłup, rehabilitacja'], ['eye', 'Okulistyka', 'Badanie wzroku i dobór okularów']] },
+    { h: 'Wyszukaj', l: [['search', 'Wyszukiwarka lekarzy', 'Po nazwisku, specjalizacji i języku'], ['star', 'Oceny pacjentów', 'Zweryfikowane opinie po wizycie'], ['languages', 'Lekarze anglojęzyczni', 'Wizyty w językach obcych']] }],
+    promo: { i: 'video', t: 'Lekarz online w 5 minut', d: 'Internista i pediatra na wideo przez całą dobę.', c: 'Połącz się', href: '#szukaj' } },
+  { k: 'erecepta', pl: 'E-Recepta', en: 'e-Prescription', cols: [
+    { h: 'Recepty i dokumenty', l: [['pill', 'Kontynuacja leczenia', 'Recepta na stałe leki bez wizyty'], ['file-text', 'E-Zwolnienie (L4)', 'Wystawiane podczas teleporady'], ['clipboard-list', 'E-Skierowanie', 'Na badania i do specjalisty']] },
+    { h: 'Jak to działa', l: [['smartphone', 'W aplikacji', 'Kod recepty SMS-em i w IKP'], ['shield-check', 'Bezpiecznie', 'Zgodnie z systemem P1 i RODO']] }],
+    promo: { i: 'pill', t: 'Recepta w 15 minut', d: 'Zamów kontynuację leczenia bez umawiania wizyty.', c: 'Zamów receptę', href: '#' } },
+  { k: 'diagnostyka', pl: 'Diagnostyka', en: 'Diagnostics', cols: [
+    { h: 'Badania', l: [['flask-conical', 'Laboratorium', 'Ponad 1 000 badań, wyniki online'], ['scan-line', 'Rezonans i tomografia', 'MR 3T, TK, opis w 48 h'], ['activity', 'USG i EKG', 'Na miejscu, w dniu wizyty']] },
+    { h: 'Profilaktyka', l: [['clipboard-check', 'Pakiety profilaktyczne', 'Check-up dla kobiet i mężczyzn'], ['microscope', 'Genetyka', 'Badania predyspozycji'], ['syringe', 'Szczepienia', 'Grypa, HPV, podróżne']] }],
+    promo: { i: 'scan-line', t: 'MR z opisem w 48 h', d: 'Radiolog wspierany przez AI, wyniki od razu w aplikacji.', c: 'Umów badanie', href: '#uslugi' } },
+  { k: 'firmy', pl: 'Dla Firm', en: 'For Business', cols: [
+    { h: 'Rozwiązania', l: [['briefcase', 'Abonamenty pracownicze', 'Od 10 osób, elastyczne warianty'], ['hard-hat', 'Medycyna pracy', 'Badania wstępne i okresowe'], ['brain', 'Wellbeing i psycholog', 'Programy wsparcia EAP']] },
+    { h: 'Dla HR', l: [['layout-dashboard', 'Panel Pracodawcy', 'Zarządzanie listą pracowników'], ['line-chart', 'Raporty absencji', 'Zanonimizowane dane o zespole'], ['headphones', 'Opiekun klienta', 'Dedykowany kontakt B2B']] }],
+    promo: { i: 'briefcase', t: 'Oferta dla firm', d: 'Wycena w 24 h dla zespołów od 10 osób.', c: 'Zapytaj o ofertę', href: '#pakiety' } }
+];
+
+const SUGGEST = [
+  ...['Internista', 'Kardiolog', 'Dermatolog', 'Pediatra', 'Ginekolog', 'Ortopeda', 'Okulista', 'Laryngolog', 'Neurolog', 'Endokrynolog', 'Psychiatra', 'Psycholog', 'Alergolog', 'Urolog', 'Stomatolog', 'Fizjoterapeuta'].map(l => ({ l, t: 'Specjalizacja', i: 'stethoscope' })),
+  ...['Morfologia krwi', 'USG jamy brzusznej', 'Rezonans magnetyczny (MR)', 'Tomografia komputerowa (TK)', 'EKG spoczynkowe', 'Mammografia', 'RTG klatki piersiowej', 'Holter EKG', 'Lipidogram', 'TSH'].map(l => ({ l, t: 'Badanie', i: 'flask-conical' })),
+  ...['Konsultacja wideo 24/7', 'E-Recepta — kontynuacja leczenia', 'Szczepienie przeciw grypie', 'Medycyna pracy — badanie okresowe', 'Higienizacja zębów'].map(l => ({ l, t: 'Usługa', i: 'sparkles' })),
+  { l: 'dr n. med. Anna Wiśniewska', t: 'Lekarz · kardiolog', i: 'user-round' },
+  { l: 'lek. Piotr Zieliński', t: 'Lekarz · ortopeda', i: 'user-round' },
+  { l: 'dr Marta Kamińska', t: 'Lekarz · dermatolog', i: 'user-round' },
+  { l: 'lek. Tomasz Nowicki', t: 'Lekarz · pediatra', i: 'user-round' }
+];
+
+const CITY = { 'Warszawa': [21.01, 52.23], 'Kraków': [19.94, 50.06], 'Wrocław': [17.03, 51.11], 'Poznań': [16.93, 52.41], 'Gdańsk': [18.65, 54.35], 'Gdynia': [18.53, 54.52], 'Łódź': [19.46, 51.76], 'Katowice': [19.02, 50.26], 'Szczecin': [14.55, 53.43], 'Lublin': [22.57, 51.25], 'Białystok': [23.16, 53.13], 'Bydgoszcz': [18.0, 53.12], 'Rzeszów': [22.0, 50.04], 'Olsztyn': [20.48, 53.78], 'Kielce': [20.63, 50.87], 'Opole': [17.93, 50.67], 'Toruń': [18.6, 53.01] };
+
+const FAC = [
+  { n: 'Centrum Medyczne Śródmieście', c: 'Warszawa', a: 'ul. Złota 59', h: 'pn–pt 7:00–21:00', p: 0, d: 1, x: 0, m: 1, s: 'Dziś 15:20' },
+  { n: 'Szpital LUX MED Mokotów', c: 'Warszawa', a: 'ul. Puławska 455', h: 'całą dobę', p: 1, d: 1, x: 1, m: 1, s: 'Dziś 13:40', hosp: 1 },
+  { n: 'Centrum Diagnostyczne Wola', c: 'Warszawa', a: 'ul. Kasprzaka 29', h: 'pn–sob 7:00–20:00', p: 1, d: 1, x: 0, m: 1, s: 'Jutro 08:10' },
+  { n: 'Centrum Medyczne Kazimierz', c: 'Kraków', a: 'ul. Starowiślna 40', h: 'pn–pt 7:30–20:00', p: 0, d: 1, x: 0, m: 0, s: 'Dziś 17:00' },
+  { n: 'Centrum Medyczne Bronowice', c: 'Kraków', a: 'ul. Armii Krajowej 18', h: 'całą dobę', p: 1, d: 1, x: 1, m: 1, s: 'Dziś 18:30' },
+  { n: 'Centrum Medyczne Legnicka', c: 'Wrocław', a: 'ul. Legnicka 40', h: 'pn–pt 7:00–20:00', p: 1, d: 1, x: 0, m: 0, s: 'Jutro 09:45' },
+  { n: 'Szpital LUX MED Wrocław', c: 'Wrocław', a: 'ul. Sołtysowicka 12', h: 'całą dobę', p: 1, d: 1, x: 1, m: 1, s: 'Dziś 16:15', hosp: 1 },
+  { n: 'Centrum Medyczne Święty Marcin', c: 'Poznań', a: 'ul. Święty Marcin 29', h: 'pn–pt 7:00–20:00', p: 0, d: 1, x: 0, m: 1, s: 'Jutro 11:20' },
+  { n: 'Centrum Medyczne Oliwa', c: 'Gdańsk', a: 'al. Grunwaldzka 482', h: 'pn–sob 7:00–20:00', p: 1, d: 1, x: 0, m: 1, s: 'Dziś 19:00' },
+  { n: 'Centrum Medyczne Śródmieście', c: 'Gdynia', a: 'ul. 10 Lutego 11', h: 'pn–pt 8:00–19:00', p: 0, d: 0, x: 0, m: 0, s: 'Czw 10:00' },
+  { n: 'Centrum Medyczne Manufaktura', c: 'Łódź', a: 'ul. Drewnowska 58', h: 'pn–sob 7:00–20:00', p: 1, d: 1, x: 0, m: 1, s: 'Jutro 07:50' },
+  { n: 'Centrum Medyczne Chorzowska', c: 'Katowice', a: 'ul. Chorzowska 50', h: 'całą dobę', p: 1, d: 1, x: 1, m: 1, s: 'Dziś 14:10' },
+  { n: 'Centrum Medyczne Pogodno', c: 'Szczecin', a: 'ul. Mazurska 22', h: 'pn–pt 7:30–19:30', p: 1, d: 0, x: 0, m: 0, s: 'Jutro 12:30' },
+  { n: 'Centrum Medyczne Lipowa', c: 'Lublin', a: 'ul. Lipowa 11', h: 'pn–pt 7:00–20:00', p: 0, d: 1, x: 0, m: 1, s: 'Pt 09:00' },
+  { n: 'Centrum Medyczne Legionowa', c: 'Białystok', a: 'ul. Legionowa 28', h: 'pn–pt 7:30–19:00', p: 1, d: 1, x: 0, m: 0, s: 'Jutro 15:45' },
+  { n: 'Centrum Medyczne Gdańska', c: 'Bydgoszcz', a: 'ul. Gdańska 60', h: 'pn–pt 7:00–19:00', p: 0, d: 1, x: 0, m: 0, s: 'Dziś 18:00' },
+  { n: 'Centrum Medyczne Piłsudskiego', c: 'Rzeszów', a: 'al. Piłsudskiego 34', h: 'pn–sob 7:00–19:00', p: 1, d: 1, x: 0, m: 1, s: 'Jutro 10:40' },
+  { n: 'Centrum Medyczne Partyzantów', c: 'Olsztyn', a: 'ul. Partyzantów 7', h: 'pn–pt 7:30–18:30', p: 1, d: 1, x: 0, m: 0, s: 'Pt 13:15' },
+  { n: 'Centrum Medyczne Sienkiewicza', c: 'Kielce', a: 'ul. Sienkiewicza 70', h: 'pn–pt 8:00–19:00', p: 0, d: 0, x: 0, m: 0, s: 'Pn 08:30' },
+  { n: 'Centrum Medyczne Ozimska', c: 'Opole', a: 'ul. Ozimska 19', h: 'pn–pt 7:30–19:00', p: 1, d: 1, x: 0, m: 0, s: 'Jutro 14:00' },
+  { n: 'Centrum Medyczne Szosa Chełmińska', c: 'Toruń', a: 'ul. Szosa Chełmińska 17', h: 'pn–pt 7:30–19:00', p: 1, d: 1, x: 0, m: 1, s: 'Czw 16:20' }
+].map((f, i) => ({ ...f, id: i }));
+
+/* ---------- i18n ---------- */
+const I18N = {
+  en: {
+    top_hotline: '24/7 hotline', top_duty: 'Doctor on duty line', top_find: 'Find a clinic', top_portal: 'Patient e-Portal', logo_sub: 'Medical care',
+    hs_ph: 'Search doctors, tests…', cta_portal: 'MyPortal', cta_book: 'Book a visit', cta_book_s: 'Book',
+    hero_new: 'New', hero_eyebrow: 'Video doctor in 5 minutes on average', hero_title: 'A modern dimension of healthcare',
+    hero_sub: 'Book visits, get e-prescriptions and check results in one place. Over 4,000 doctors, our own hospitals and diagnostics across Poland.',
+    f_what_ph: 'Who or what are you looking for?', f_city_ph: 'City', f_btn: 'Search', hero_popular: 'Popular:', hero_rating: 'average visit rating in the app',
+    dna_label: 'AI-assisted diagnostics', dna_hint: 'Move your cursor', b_pat: 'Patients', b_doc: 'Doctors', b_24: 'Availability',
+    qa_title: 'Get things done in a few clicks', tabs_eyebrow: 'Health check', tabs_title: 'One network, every specialty',
+    tabs_sub: 'From prevention and diagnostics to hospital treatment. Pick an area to see how care works step by step.',
+    price_eyebrow: 'Medical plans', price_title: 'Clear pricing, no asterisks', price_sub: 'Choose who you need care for. Every plan includes 24/7 video consultations and the patient app.',
+    map_eyebrow: 'Find a clinic', map_title: 'Close to you, all over Poland', why_eyebrow: 'Why LUX MED', why_title: 'Scale that works for your health', app_title: 'Your health in your pocket'
+  }
+};
+const I18N_PL = {};
+$$('[data-i18n]').forEach(el => { I18N_PL[el.dataset.i18n] = el.textContent; });
+$$('[data-i18n-ph]').forEach(el => { I18N_PL[el.dataset.i18nPh] = el.placeholder; });
+let lang = 'pl';
+function setLang(l) {
+  lang = l;
+  document.documentElement.lang = l;
+  const dict = l === 'en' ? I18N.en : I18N_PL;
+  $$('[data-i18n]').forEach(el => { const v = dict[el.dataset.i18n]; if (v) el.textContent = v; });
+  $$('[data-i18n-ph]').forEach(el => { const v = dict[el.dataset.i18nPh]; if (v) el.placeholder = v; });
+  $$('.lang-btn').forEach(b => { const on = b.dataset.lang === l; b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on); });
+  renderNav();
+  if (l === 'en') toast('English version: key navigation and hero content are translated in this prototype.', 'languages');
+}
+$$('.lang-btn').forEach(b => b.addEventListener('click', () => b.dataset.lang !== lang && setLang(b.dataset.lang)));
+
+/* ---------- Header: nav + mega menu ---------- */
+const header = $('#site-header'), mega = $('#mega'), megaPanel = $('#mega-panel');
+let openKey = null, closeT;
+function renderNav() {
+  $('#desktop-nav').innerHTML = MENU.map(m => `<button type="button" class="nav-btn" data-menu="${m.k}" aria-expanded="false" aria-controls="mega">${esc(m[lang] || m.pl)}<i data-lucide="chevron-down"></i></button>`).join('');
+  $('#drawer-nav').innerHTML = MENU.map(m => `
+    <div class="acc border-b border-line/70 last:border-0">
+      <button type="button" class="acc-head w-full flex items-center justify-between px-3 py-4 text-[15px] font-semibold text-ink" aria-expanded="false">${esc(m[lang] || m.pl)}<i data-lucide="chevron-down" class="acc-chev w-4 h-4 text-muted transition-transform"></i></button>
+      <div class="acc-body"><div><ul class="pb-3 space-y-0.5">
+        ${m.cols.flatMap(c => c.l).map(([i, t, d]) => `<li><a href="#" class="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-soft transition"><span class="grid place-items-center w-9 h-9 rounded-xl bg-aqua/10 text-aqua-dark shrink-0"><i data-lucide="${i}" class="w-4 h-4"></i></span><span class="leading-tight"><span class="block text-sm font-medium text-ink">${t}</span><span class="block text-xs text-muted mt-0.5">${d}</span></span></a></li>`).join('')}
+      </ul></div></div>
+    </div>`).join('');
+  $$('.nav-btn').forEach(b => {
+    b.addEventListener('mouseenter', () => { if (matchMedia('(hover:hover)').matches) openMega(b.dataset.menu); });
+    b.addEventListener('click', () => openKey === b.dataset.menu ? closeMega() : openMega(b.dataset.menu));
+    b.addEventListener('keydown', e => { if (e.key === 'ArrowDown') { e.preventDefault(); openMega(b.dataset.menu); const f = $('a', megaPanel); f && f.focus(); } });
+  });
+  $$('.acc-head').forEach(h => h.addEventListener('click', () => {
+    const acc = h.parentElement, open = !acc.classList.contains('open');
+    $$('.acc.open').forEach(a => { a.classList.remove('open'); $('.acc-head', a).setAttribute('aria-expanded', 'false'); });
+    acc.classList.toggle('open', open); h.setAttribute('aria-expanded', open);
+  }));
+  icons();
+}
+function openMega(k) {
+  clearTimeout(closeT);
+  const m = MENU.find(x => x.k === k);
+  if (!m) return;
+  if (openKey !== k) {
+    megaPanel.innerHTML = `<div class="grid grid-cols-12 gap-6">
+      ${m.cols.map(c => `<div class="col-span-4"><p class="px-3 text-xs font-semibold text-muted mb-2">${c.h}</p><ul class="space-y-0.5">${c.l.map(([i, t, d]) => `
+        <li><a href="#" class="group flex items-start gap-3 rounded-2xl p-3 hover:bg-surface transition"><span class="grid place-items-center w-10 h-10 rounded-xl bg-aqua/10 text-aqua-dark shrink-0 group-hover:bg-aqua group-hover:text-white transition"><i data-lucide="${i}" class="w-[18px] h-[18px]"></i></span><span class="leading-tight pt-0.5"><span class="block text-sm font-semibold text-ink">${t}</span><span class="block text-[13px] text-muted mt-1">${d}</span></span></a></li>`).join('')}</ul></div>`).join('')}
+      <a href="${m.promo.href}" class="promo col-span-4 group relative overflow-hidden rounded-3xl bg-navy p-6 text-white flex flex-col">
+        <span class="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-aqua/30 blur-2xl group-hover:scale-125 transition-transform duration-500"></span>
+        <span class="relative grid place-items-center w-11 h-11 rounded-2xl bg-white/10 border border-white/15"><i data-lucide="${m.promo.i}" class="w-5 h-5 text-mint"></i></span>
+        <span class="relative mt-5 text-lg font-bold">${m.promo.t}</span>
+        <span class="relative mt-1.5 text-sm text-white/70 leading-relaxed">${m.promo.d}</span>
+        <span class="relative mt-auto pt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-mint arrow-link">${m.promo.c}<i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+      </a></div>`;
+    icons();
+    if (G && openKey && !reduced) G.fromTo(megaPanel.firstElementChild, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: .25, ease: 'power2.out' });
+  }
+  openKey = k;
+  mega.classList.add('open'); mega.setAttribute('aria-hidden', 'false');
+  $$('.nav-btn').forEach(b => b.setAttribute('aria-expanded', b.dataset.menu === k));
+}
+function closeMega() {
+  openKey = null; mega.classList.remove('open'); mega.setAttribute('aria-hidden', 'true');
+  $$('.nav-btn').forEach(b => b.setAttribute('aria-expanded', 'false'));
+}
+$('#mainbar').addEventListener('mouseleave', () => { closeT = setTimeout(closeMega, 160); });
+$('#mainbar').addEventListener('mouseenter', () => clearTimeout(closeT));
+megaPanel.addEventListener('click', e => { if (e.target.closest('a[href^="#"]:not([href="#"])')) closeMega(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeMega(); closeDrawer(); } });
+document.addEventListener('click', e => { if (openKey && !e.target.closest('#mainbar')) closeMega(); });
+
+/* Scroll state */
+const toTop = $('#toTop');
+let ticking = false;
+window.addEventListener('scroll', () => {
+  if (ticking) return; ticking = true;
+  requestAnimationFrame(() => {
+    const y = window.scrollY;
+    header.classList.toggle('scrolled', y > 40);
+    toTop.classList.toggle('show', y > 900);
+    ticking = false;
+  });
+}, { passive: true });
+toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' }));
+
+/* Drawer */
+const drawer = $('#drawer');
+function openDrawer() { drawer.classList.add('open'); drawer.setAttribute('aria-hidden', 'false'); $('#menu-open').setAttribute('aria-expanded', 'true'); document.body.style.overflow = 'hidden'; setTimeout(() => $('[data-close]', $('.drawer-panel')).focus(), 50); }
+function closeDrawer() { if (!drawer.classList.contains('open')) return; drawer.classList.remove('open'); drawer.setAttribute('aria-hidden', 'true'); $('#menu-open').setAttribute('aria-expanded', 'false'); document.body.style.overflow = ''; }
+$('#menu-open').addEventListener('click', openDrawer);
+$$('[data-close], [data-close-link]', drawer).forEach(el => el.addEventListener('click', closeDrawer));
+
+/* ---------- Autosuggest ---------- */
+function hl(label, q) {
+  if (!q) return esc(label);
+  const i = norm(label).indexOf(q);
+  if (i < 0) return esc(label);
+  return esc(label.slice(0, i)) + '<mark>' + esc(label.slice(i, i + q.length)) + '</mark>' + esc(label.slice(i + q.length));
+}
+function attachSuggest(input, list, source, onPick, opts = {}) {
+  let idx = -1, items = [];
+  const setOpen = o => { list.classList.toggle('open', o); input.setAttribute('aria-expanded', o); };
+  function render() {
+    const q = norm(input.value.trim());
+    items = source().filter(it => !q || norm(it.l).includes(q)).slice(0, opts.max || 7);
+    if (idx >= items.length) idx = items.length - 1;
+    if (!items.length) {
+      list.innerHTML = `<li class="px-3 py-3 text-sm text-muted">Brak wyników dla „${esc(input.value)}”. Spróbuj nazwy specjalizacji, badania lub lekarza.</li>`;
+    } else {
+      let lastT = null;
+      list.innerHTML = (q ? '' : `<li class="sug-group">${opts.title || 'Podpowiedzi'}</li>`) + items.map((it, i) => {
+        const group = q && opts.grouped && it.t.split(' · ')[0] !== lastT ? `<li class="sug-group">${esc(lastT = it.t.split(' · ')[0])}</li>` : '';
+        return `${group}<li role="option" id="${list.id}-o${i}" data-i="${i}" aria-selected="${i === idx}" class="sug-item ${i === idx ? 'is-active' : ''}"><span class="sug-ic"><i data-lucide="${it.i}"></i></span><span class="flex-1 min-w-0"><span class="block truncate text-sm font-medium text-ink">${hl(it.l, q)}</span>${it.t ? `<span class="block text-xs text-muted truncate">${esc(it.t)}</span>` : ''}</span></li>`;
+      }).join('');
+    }
+    input.setAttribute('aria-activedescendant', idx >= 0 ? `${list.id}-o${idx}` : '');
+    setOpen(true); icons();
+  }
+  function pick(i) { const it = items[i]; if (!it) return; input.value = it.l; setOpen(false); idx = -1; onPick && onPick(it); }
+  input.addEventListener('focus', () => { idx = -1; render(); });
+  input.addEventListener('input', () => { idx = -1; render(); });
+  input.addEventListener('blur', () => setTimeout(() => setOpen(false), 120));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); idx = Math.min(items.length - 1, idx + 1); render(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); idx = Math.max(-1, idx - 1); render(); }
+    else if (e.key === 'Enter' && idx >= 0 && list.classList.contains('open')) { e.preventDefault(); pick(idx); }
+    else if (e.key === 'Escape') { setOpen(false); }
+  });
+  list.addEventListener('mousedown', e => { const li = e.target.closest('[data-i]'); if (li) { e.preventDefault(); pick(+li.dataset.i); } });
+}
+const goSearch = it => toast(`Wyniki dla <b>${esc(it.l)}</b> — ${it.t.startsWith('Lekarz') ? 'profil lekarza i wolne terminy' : 'dostępne terminy w Twojej okolicy'} (prototyp).`, 'search');
+attachSuggest($('#header-search'), $('#hs-list'), () => SUGGEST, goSearch, { grouped: true, max: 8 });
+attachSuggest($('#drawer-search'), $('#ds-list'), () => SUGGEST, it => { closeDrawer(); goSearch(it); }, { grouped: true, max: 6 });
+attachSuggest($('#q-what'), $('#what-list'), () => SUGGEST, () => $('#q-city').focus(), { grouped: true });
+attachSuggest($('#q-city'), $('#city-list'), () => Object.keys(CITY).map(c => ({ l: c, t: `${FAC.filter(f => f.c === c).length} placówek`, i: 'map-pin' })), null, { title: 'Miasta z placówkami' });
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && !/input|textarea|select/i.test(document.activeElement.tagName)) {
+    const hs = $('#header-search');
+    if (hs.offsetParent) { e.preventDefault(); hs.focus(); }
+  }
+});
+$('#lg-search').addEventListener('click', () => { $('#q-what').scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); setTimeout(() => $('#q-what').focus({ preventScroll: true }), 450); });
+
+/* ---------- Hero form ---------- */
+$$('.pop-tag').forEach(b => b.addEventListener('click', () => { $('#q-what').value = b.textContent; $('#q-city').focus(); }));
+$('#szukaj').addEventListener('submit', e => {
+  e.preventDefault();
+  const q = $('#q-what').value.trim(), c = $('#q-city').value.trim();
+  if (!q) { const f = $('#f-what'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); $('#q-what').focus(); return; }
+  const city = Object.keys(CITY).find(k => norm(k) === norm(c));
+  toast(`Szukamy: <b>${esc(q)}</b>${city ? ' w mieście <b>' + esc(city) + '</b>' : ''}. Znaleźliśmy 24 wolne terminy w najbliższych 3 dniach.`, 'calendar-check');
+  if (city) { state.city = city; $('#f-city').value = city; applyFilters(); }
+});
+
+/* ---------- Counters ---------- */
+function countUp(el, dur = 1.8) {
+  const to = +el.dataset.count, pre = el.dataset.prefix || '';
+  if (reduced || !G) { el.textContent = pre + fmt(to); return; }
+  const o = { v: 0 };
+  G.to(o, { v: to, duration: dur, ease: 'power3.out', onUpdate: () => { el.textContent = pre + fmt(o.v); } });
+}
+
+/* ---------- Quick actions ---------- */
+const QA = [
+  ['calendar-check', 'Umów wizytę online', 'Wolne terminy u ponad 4 000 lekarzy w czasie rzeczywistym.', 'Wybierz termin', '#szukaj', 1],
+  ['pill', 'E-Recepta & Zwolnienie', 'Kontynuacja leczenia i L4 bez wychodzenia z domu.', 'Zamów receptę', '#'],
+  ['flask-conical', 'Wyniki badań', 'Wyniki z komentarzem lekarza od razu w aplikacji.', 'Sprawdź wyniki', '#'],
+  ['video', 'Konsultacja wideo 24/7', 'Lekarz na ekranie średnio w mniej niż 5 minut.', 'Połącz z lekarzem', '#'],
+  ['package', 'Pakiety Medyczne', 'Abonamenty dla Ciebie, rodziny i firmy.', 'Porównaj pakiety', '#pakiety']
+];
+$('#qa-grid').innerHTML = QA.map(([i, t, d, c, href, feat]) => feat ? `
+  <a href="${href}" class="qa-card spot lift group sm:col-span-2 lg:col-span-1 rounded-[26px] p-6 bg-navy text-white flex flex-col min-h-[210px] overflow-hidden relative">
+    <span class="absolute -right-12 -bottom-12 w-44 h-44 rounded-full bg-aqua/30 blur-2xl group-hover:scale-125 transition-transform duration-500" aria-hidden="true"></span>
+    <span class="relative grid place-items-center w-12 h-12 rounded-2xl bg-gradient-to-br from-aqua to-mint text-white shadow-glow"><i data-lucide="${i}" class="w-6 h-6"></i></span>
+    <span class="relative mt-5 text-[17px] font-bold">${t}</span>
+    <span class="relative mt-1.5 text-sm text-white/70 leading-relaxed">${d}</span>
+    <span class="relative mt-auto pt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-mint arrow-link">${c}<i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+  </a>` : `
+  <a href="${href}" class="qa-card spot lift group rounded-[26px] p-6 bg-surface border border-line shadow-soft flex flex-col min-h-[210px]">
+    <span class="grid place-items-center w-12 h-12 rounded-2xl bg-aqua/10 text-aqua-dark group-hover:bg-gradient-to-br group-hover:from-aqua group-hover:to-mint group-hover:text-white transition-all duration-300"><i data-lucide="${i}" class="w-6 h-6"></i></span>
+    <span class="mt-5 text-[17px] font-bold text-ink">${t}</span>
+    <span class="mt-1.5 text-sm text-muted leading-relaxed">${d}</span>
+    <span class="mt-auto pt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-aqua-dark arrow-link">${c}<i data-lucide="arrow-right" class="w-4 h-4"></i></span>
+  </a>`).join('');
+
+/* ---------- Tabs ---------- */
+const TABS = [
+  { k: 'stom', label: 'Stomatologia', i: 'smile', title: 'Stomatologia bez stresu i bez czekania', desc: 'Od przeglądu i higienizacji po implanty i ortodoncję. Nowoczesne gabinety, znieczulenie komputerowe i plan leczenia z kosztorysem przed pierwszym zabiegiem.', b: ['Przeglądy i higienizacja w ramach pakietu', 'Implantologia i protetyka cyfrowa', 'Ortodoncja dla dzieci i dorosłych', 'Tomografia stożkowa CBCT na miejscu'], s: [['120+', 'gabinetów'], ['4,9/5', 'ocena wizyt'], ['48 h', 'do terminu']], v: { h: 'Najbliższe terminy', tag: 'Warszawa, Mokotów', items: [['Higienizacja z fluoryzacją', 'lek. dent. Julia Mazur', 'Dziś 16:40'], ['Przegląd stomatologiczny', 'lek. dent. Adam Wróbel', 'Jutro 08:15'], ['Konsultacja ortodontyczna', 'dr Ewa Sikora', 'Pt 12:00']], bar: ['Wolne terminy w tym tygodniu', 72] } },
+  { k: 'praca', label: 'Medycyna Pracy', i: 'hard-hat', title: 'Medycyna pracy w jednej wizycie', desc: 'Badania wstępne, okresowe i kontrolne z orzeczeniem wydanym tego samego dnia. Elektroniczne skierowania od pracodawcy i komplet badań w jednej placówce.', b: ['Orzeczenie tego samego dnia', 'E-skierowania z Panelu Pracodawcy', 'Badania kierowców i prace na wysokości', 'Obsługa firm w całej Polsce'], s: [['1 dzień', 'do orzeczenia'], ['40 tys.', 'firm klientów'], ['95%', 'badań w 1 wizycie']], v: { h: 'Ścieżka pracownika', tag: 'Badanie okresowe', items: [['Rejestracja z e-skierowaniem', 'Automatycznie z systemu HR', '08:00'], ['Badania laboratoryjne i wzrok', 'Pracownia na miejscu', '08:20'], ['Orzeczenie lekarskie', 'Podpis elektroniczny', '09:05']], bar: ['Postęp wizyty', 80] } },
+  { k: 'szpital', label: 'Szpitale & Operacje', i: 'building-2', title: 'Własne szpitale i planowe operacje', desc: 'Zabiegi ortopedyczne, chirurgiczne i ginekologiczne w szpitalach LUX MED. Koordynator prowadzi Cię od kwalifikacji po rehabilitację, bez kolejek i ukrytych kosztów.', b: ['Ortopedia, artroskopia, endoprotezy', 'Chirurgia małoinwazyjna i bariatryczna', 'Koordynator pacjenta 1:1', 'Rehabilitacja pooperacyjna w pakiecie'], s: [['12', 'szpitali'], ['30 tys.', 'zabiegów rocznie'], ['14 dni', 'do kwalifikacji']], v: { h: 'Plan leczenia', tag: 'Artroskopia kolana', items: [['Kwalifikacja ortopedyczna', 'dr hab. Marek Lis', '12.10'], ['Zabieg w Szpitalu LUX MED', 'Pobyt 1 doba', '19.10'], ['Rehabilitacja, 8 sesji', 'Fizjoterapeuta prowadzący', 'od 22.10']], bar: ['Gotowość do zabiegu', 64] } },
+  { k: 'estet', label: 'Medycyna Estetyczna', i: 'sparkles', title: 'Medycyna estetyczna pod opieką lekarzy', desc: 'Zabiegi wykonują wyłącznie lekarze dermatolodzy i lekarze medycyny estetycznej, z certyfikowanymi preparatami i konsultacją przed każdym zabiegiem.', b: ['Konsultacja dermatologiczna przed zabiegiem', 'Laseroterapia i zabiegi odmładzające', 'Leczenie trądziku i przebarwień', 'Certyfikowane preparaty i protokoły'], s: [['100%', 'zabiegów przez lekarzy'], ['25+', 'rodzajów terapii'], ['4,8/5', 'satysfakcja']], v: { h: 'Twoja konsultacja', tag: 'Dermatologia estetyczna', items: [['Analiza skóry 3D', 'Dermatoskop cyfrowy', '20 min'], ['Plan terapii laserowej', '3 zabiegi co 4 tygodnie', 'Plan'], ['Kontrola efektów', 'Konsultacja wideo', 'Online']], bar: ['Dopasowanie terapii', 88] } },
+  { k: 'diag', label: 'Diagnostyka Obrazowa', i: 'scan-line', title: 'Rezonans i tomografia z opisem w 48 h', desc: 'Aparaty MR 1,5T i 3T, tomografia wielorzędowa, USG i RTG. Opisy przygotowują radiolodzy wspierani przez algorytmy AI, a wyniki trafiają od razu do aplikacji.', b: ['MR 1,5T i 3T, TK wielorzędowa', 'Wsparcie AI przy opisie badań', 'Wyniki z obrazami w aplikacji', 'Badania z kontrastem pod opieką lekarza'], s: [['48 h', 'na opis'], ['60+', 'pracowni MR i TK'], ['AI', 'drugi czytelnik']], v: { h: 'Status badania', tag: 'MR kręgosłupa L-S', items: [['Badanie wykonane', 'Pracownia MR 3T', 'Pon'], ['Analiza wstępna AI', 'Priorytet standardowy', 'Pon'], ['Opis radiologa', 'dr n. med. K. Duda', 'Wt 14:00']], bar: ['Opis w toku', 90] } }
+];
+let activeTab = 0;
+$('#tab-list').innerHTML = TABS.map((t, i) => `<button type="button" role="tab" id="tab-${t.k}" class="tab-btn" aria-selected="${i === 0}" aria-controls="tab-panel" tabindex="${i === 0 ? 0 : -1}"><i data-lucide="${t.i}"></i>${t.label}</button>`).join('');
+function renderTab(i, animate) {
+  const t = TABS[i], panel = $('#tab-panel');
+  panel.setAttribute('aria-labelledby', 'tab-' + t.k);
+  panel.innerHTML = `
+    <div class="tp-a lg:col-span-6 flex flex-col justify-center">
+      <span class="grid place-items-center w-14 h-14 rounded-2xl bg-gradient-to-br from-aqua to-mint text-white shadow-glow"><i data-lucide="${t.i}" class="w-7 h-7"></i></span>
+      <h3 class="mt-6 text-2xl sm:text-3xl font-bold tracking-tight text-ink">${t.title}</h3>
+      <p class="mt-3 text-muted leading-relaxed max-w-xl">${t.desc}</p>
+      <ul class="mt-6 grid sm:grid-cols-2 gap-3">${t.b.map(x => `<li class="flex items-start gap-2.5 text-[15px] text-ink/90"><span class="mt-0.5 grid place-items-center w-5 h-5 rounded-full bg-mint/15 text-jade shrink-0"><i data-lucide="check" class="w-3.5 h-3.5"></i></span>${x}</li>`).join('')}</ul>
+      <div class="mt-8 grid grid-cols-3 gap-3 max-w-lg">${t.s.map(([v, l]) => `<div class="rounded-2xl bg-surface border border-line p-3.5"><p class="text-xl font-extrabold tracking-tight text-ink">${v}</p><p class="text-xs text-muted mt-0.5">${l}</p></div>`).join('')}</div>
+      <div class="mt-8 flex flex-wrap gap-3"><a href="#szukaj" class="btn-primary"><i data-lucide="calendar-plus" class="w-4 h-4"></i>Umów wizytę</a><a href="#" class="btn-ghost">Poznaj szczegóły<i data-lucide="arrow-up-right" class="w-4 h-4"></i></a></div>
+    </div>
+    <div class="tp-b lg:col-span-6">
+      <div class="relative h-full rounded-[30px] bg-gradient-to-br from-navy-700 via-navy to-navy-900 p-5 sm:p-8 overflow-hidden min-h-[380px] flex items-center">
+        <div class="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-aqua/25 blur-3xl" aria-hidden="true"></div>
+        <div class="absolute -left-16 bottom-0 w-60 h-60 rounded-full bg-mint/20 blur-3xl" aria-hidden="true"></div>
+        <div class="relative w-full glass !bg-white/[.08] !border-white/15 rounded-3xl p-5 sm:p-6 text-white">
+          <div class="flex items-center justify-between gap-3">
+            <div><p class="text-xs text-white/55">${t.v.tag}</p><p class="text-lg font-bold mt-0.5">${t.v.h}</p></div>
+            <span class="grid place-items-center w-11 h-11 rounded-2xl bg-white/10"><i data-lucide="${t.i}" class="w-5 h-5 text-mint"></i></span>
+          </div>
+          <ul class="mt-5 space-y-2.5">${t.v.items.map(([a, b, c], j) => `
+            <li class="tv-item flex items-center gap-3 rounded-2xl bg-white/[.06] border border-white/10 p-3.5 hover:bg-white/[.1] transition">
+              <span class="grid place-items-center w-9 h-9 rounded-xl ${j === 0 ? 'bg-mint text-navy-900' : 'bg-white/10 text-white/80'} shrink-0"><i data-lucide="${j === 0 ? 'check' : 'circle-dot'}" class="w-4 h-4"></i></span>
+              <span class="flex-1 min-w-0 leading-tight"><span class="block text-sm font-semibold truncate">${a}</span><span class="block text-xs text-white/55 mt-0.5 truncate">${b}</span></span>
+              <span class="text-xs font-semibold ${j === 0 ? 'text-mint' : 'text-white/75'} whitespace-nowrap">${c}</span>
+            </li>`).join('')}</ul>
+          <div class="mt-5"><div class="flex justify-between text-xs text-white/60 mb-2"><span>${t.v.bar[0]}</span><span class="font-semibold text-white">${t.v.bar[1]}%</span></div>
+            <div class="h-2 rounded-full bg-white/10 overflow-hidden"><div class="tv-bar h-full rounded-full bg-gradient-to-r from-aqua to-mint" style="width:${t.v.bar[1]}%"></div></div></div>
+        </div>
+      </div>
+    </div>`;
+  icons();
+  if (animate && G && !reduced) {
+    G.fromTo(panel.querySelector('.tp-a').children, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: .5, stagger: .05, ease: 'power3.out', clearProps: 'transform,opacity' });
+    G.fromTo(panel.querySelector('.tp-b > div'), { opacity: 0, scale: .97 }, { opacity: 1, scale: 1, duration: .6, ease: 'power3.out', clearProps: 'transform,opacity' });
+    G.fromTo(panel.querySelectorAll('.tv-item'), { opacity: 0, x: 20 }, { opacity: 1, x: 0, duration: .5, stagger: .08, delay: .15, ease: 'power3.out', clearProps: 'transform,opacity' });
+    G.from(panel.querySelector('.tv-bar'), { width: 0, duration: 1, delay: .3, ease: 'power3.out' });
+  }
+}
+function selectTab(i, focus) {
+  activeTab = (i + TABS.length) % TABS.length;
+  $$('.tab-btn').forEach((b, j) => { b.setAttribute('aria-selected', j === activeTab); b.tabIndex = j === activeTab ? 0 : -1; });
+  const btn = $$('.tab-btn')[activeTab];
+  if (focus) btn.focus();
+  btn.scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduced ? 'auto' : 'smooth' });
+  renderTab(activeTab, true);
+}
+$$('.tab-btn').forEach((b, i) => {
+  b.addEventListener('click', () => i !== activeTab && selectTab(i));
+  b.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); selectTab(activeTab + 1, true); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); selectTab(activeTab - 1, true); }
+  });
+});
+renderTab(0, false);
+
+/* ---------- Pricing ---------- */
+const MODES = {
+  ind: { unit: 'zł / mies.', note: 'Umowa na 12 miesięcy. Konsultacje wideo dostępne od pierwszego dnia.', prices: [89, 159, 299], cta: 'Wybierz pakiet', who: 'dla 1 osoby' },
+  fam: { unit: 'zł / mies.', note: 'Cena dla 2 dorosłych i do 2 dzieci. Każde kolejne dziecko −50%.', prices: [219, 389, 699], cta: 'Wybierz pakiet', who: 'do 4 osób' },
+  b2b: { unit: 'zł / os. / mies.', note: 'Ceny netto od 10 pracowników. Medycyna pracy i Panel Pracodawcy w każdym wariancie.', prices: [69, 119, 229], cta: 'Zapytaj o ofertę', who: 'za pracownika' }
+};
+const PLANS = [
+  { name: 'Podstawowy', i: 'shield', desc: 'Codzienna opieka i szybki dostęp do lekarza pierwszego kontaktu.', f: [[1, 'Internista i pediatra bez limitu'], [1, 'Konsultacje wideo 24/7'], [1, '10 specjalistów bez skierowania'], [1, '60 badań laboratoryjnych'], [0, 'USG, RTG i EKG'], [0, 'Rezonans i tomografia']] },
+  { name: 'Standard Premium', i: 'shield-plus', popular: 1, desc: 'Pełna diagnostyka i szeroki dostęp do specjalistów w 3 dni.', f: [[1, 'Wszystko z pakietu Podstawowego'], [1, '25 specjalistów bez skierowania'], [1, 'Ponad 200 badań laboratoryjnych'], [1, 'USG, RTG i EKG w pakiecie'], [1, 'Stomatologia: przegląd i higienizacja'], [1, 'MR i TK z rabatem 30%']] },
+  { name: 'VIP Gold', i: 'crown', desc: 'Opieka bez limitów z opiekunem pacjenta i wizytami domowymi.', f: [[1, 'Wszystko z pakietu Standard Premium'], [1, 'Wszyscy specjaliści, termin do 48 h'], [1, 'Rezonans i tomografia w pakiecie'], [1, 'Opiekun pacjenta VIP'], [1, 'Wizyty domowe'], [1, 'Planowe zabiegi szpitalne']] }
+];
+let mode = 'ind';
+$('#plans').innerHTML = PLANS.map((p, idx) => {
+  const pop = p.popular;
+  return `<div class="plan-wrap ${pop ? 'lg:-my-4' : ''}">
+    <article class="spot lift relative h-full rounded-[30px] p-7 sm:p-8 flex flex-col ${pop ? 'bg-navy text-white shadow-glow ring-1 ring-aqua/40' : 'bg-surface border border-line shadow-soft'}">
+      ${pop ? `<span class="absolute -top-3.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-aqua to-mint px-3.5 py-1.5 text-xs font-bold text-navy-900 shadow-glow whitespace-nowrap"><i data-lucide="flame" class="w-3.5 h-3.5"></i>Najpopularniejszy</span>` : ''}
+      <div class="flex items-center gap-3">
+        <span class="grid place-items-center w-11 h-11 rounded-2xl ${pop ? 'bg-white/10 text-mint' : 'bg-aqua/10 text-aqua-dark'}"><i data-lucide="${p.i}" class="w-5 h-5"></i></span>
+        <h3 class="text-xl font-bold tracking-tight">${p.name}</h3>
+      </div>
+      <p class="mt-3 text-sm leading-relaxed ${pop ? 'text-white/70' : 'text-muted'}">${p.desc}</p>
+      <div class="mt-6 flex items-end gap-2">
+        <span class="price text-5xl font-extrabold tracking-[-0.04em]" data-idx="${idx}">${MODES.ind.prices[idx]}</span>
+        <span class="pb-1.5 text-sm leading-tight ${pop ? 'text-white/65' : 'text-muted'}"><span class="unit block">${MODES.ind.unit}</span><span class="who block text-xs">${MODES.ind.who}</span></span>
+      </div>
+      <a href="#" class="plan-cta mt-6 ${pop ? 'btn-primary' : 'btn-ghost justify-center'} w-full">${MODES.ind.cta}</a>
+      <ul class="mt-7 space-y-3.5 text-[14.5px]">${p.f.map(([ok, t]) => `<li class="flex items-start gap-3 ${ok ? '' : (pop ? 'text-white/40' : 'text-muted/70')}">
+        <span class="mt-0.5 grid place-items-center w-5 h-5 rounded-full shrink-0 ${ok ? (pop ? 'bg-mint text-navy-900' : 'bg-mint/15 text-jade') : (pop ? 'bg-white/10' : 'bg-soft')}"><i data-lucide="${ok ? 'check' : 'minus'}" class="w-3.5 h-3.5"></i></span>${ok ? '' : '<span class="sr-only">Brak: </span>'}${t}</li>`).join('')}</ul>
+    </article></div>`;
+}).join('');
+$('#mode-note').textContent = MODES.ind.note;
+const seg = $('#seg'), segInd = $('#seg-ind');
+function moveSeg() { const b = $('.seg-btn[aria-checked="true"]', seg); segInd.style.width = b.offsetWidth + 'px'; segInd.style.transform = `translateX(${b.offsetLeft - 5}px)`; }
+function setMode(m) {
+  if (m === mode) return; mode = m;
+  $$('.seg-btn', seg).forEach(b => b.setAttribute('aria-checked', b.dataset.mode === m));
+  moveSeg();
+  const M = MODES[m];
+  $$('.price').forEach(el => {
+    const to = M.prices[+el.dataset.idx];
+    if (G && !reduced) { const o = { v: +el.textContent }; G.to(o, { v: to, duration: .7, ease: 'power3.out', onUpdate: () => el.textContent = Math.round(o.v) }); }
+    else el.textContent = to;
+  });
+  $$('.unit').forEach(el => el.textContent = M.unit);
+  $$('.who').forEach(el => el.textContent = M.who);
+  $$('.plan-cta').forEach(el => el.textContent = M.cta);
+  $('#mode-note').textContent = M.note;
+  if (G && !reduced) G.fromTo('.plan-wrap', { y: 8 }, { y: 0, duration: .5, stagger: .06, ease: 'power3.out', clearProps: 'transform' });
+}
+$$('.seg-btn', seg).forEach(b => {
+  b.addEventListener('click', () => setMode(b.dataset.mode));
+  b.addEventListener('keydown', e => {
+    const bs = $$('.seg-btn', seg), i = bs.indexOf(b);
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); const n = bs[(i + (e.key === 'ArrowRight' ? 1 : -1) + bs.length) % bs.length]; n.focus(); setMode(n.dataset.mode); }
+  });
+});
+window.addEventListener('resize', moveSeg);
+
+const CMP = [['Internista, pediatra, lekarz rodzinny', 1, 1, 1], ['Konsultacje wideo i czat 24/7', 1, 1, 1], ['Specjaliści bez skierowania', '10', '25', 'Wszyscy'], ['Badania laboratoryjne', '60', '200+', '400+'], ['USG, RTG, EKG', 0, 1, 1], ['Rezonans (MR) i tomografia (TK)', 0, 'Rabat 30%', 1], ['Stomatologia', 'Przegląd', 'Przegląd + higienizacja', 'Pełny zakres'], ['Wizyty domowe', 0, 0, 1], ['Opiekun pacjenta VIP', 0, 0, 1], ['Planowe zabiegi szpitalne', 0, 'Rabat 15%', 1], ['Termin u specjalisty', 'do 7 dni', 'do 3 dni', 'do 48 h']];
+const cell = v => v === 1 ? '<span class="inline-grid place-items-center w-6 h-6 rounded-full bg-mint/15 text-jade"><i data-lucide="check" class="w-4 h-4"></i><span class="sr-only">Tak</span></span>' : v === 0 ? '<span class="inline-grid place-items-center w-6 h-6 rounded-full bg-soft text-muted"><i data-lucide="minus" class="w-4 h-4"></i><span class="sr-only">Nie</span></span>' : `<span class="font-semibold text-ink">${v}</span>`;
+$('#cmp-body').innerHTML = CMP.map(r => `<tr class="border-b border-line/70 last:border-0 hover:bg-soft/60 transition"><th scope="row" class="py-3.5 px-5 text-left font-medium text-ink/90">${r[0]}</th><td class="py-3.5 px-4">${cell(r[1])}</td><td class="py-3.5 px-4 bg-aqua/[.06]">${cell(r[2])}</td><td class="py-3.5 px-4">${cell(r[3])}</td></tr>`).join('');
+$('#cmp-toggle').addEventListener('click', e => {
+  const w = $('#cmp-wrap'), open = !w.parentElement.classList.contains('cmp-open');
+  w.parentElement.classList.toggle('cmp-open', open);
+  w.style.gridTemplateRows = open ? '1fr' : '0fr';
+  e.currentTarget.setAttribute('aria-expanded', open);
+  $('#cmp-chev').style.transform = open ? 'rotate(180deg)' : '';
+  setTimeout(() => window.ScrollTrigger && ScrollTrigger.refresh(), 350);
+});
+
+/* ---------- Map ---------- */
+const POLY = [[14.22,53.93],[14.8,54.05],[15.6,54.18],[16.3,54.48],[16.9,54.6],[17.6,54.8],[18.35,54.84],[18.8,54.64],[18.55,54.43],[18.95,54.36],[19.64,54.45],[20.4,54.4],[21.3,54.33],[22.2,54.34],[22.79,54.36],[23.34,54.18],[23.52,53.95],[23.72,53.5],[23.93,53.12],[23.68,52.73],[23.18,52.28],[23.6,51.85],[23.64,51.5],[23.98,51.03],[24.1,50.84],[23.72,50.4],[23.2,50.22],[22.66,49.78],[22.8,49.34],[22.56,49.08],[22.0,49.2],[21.4,49.43],[20.9,49.3],[20.3,49.4],[19.8,49.2],[19.4,49.56],[18.85,49.5],[18.55,49.9],[18.0,50.03],[17.6,50.27],[16.9,50.43],[16.62,50.1],[16.2,50.42],[15.6,50.77],[15.0,51.0],[14.82,50.87],[15.03,51.28],[14.7,51.56],[14.75,52.07],[14.55,52.62],[14.15,52.88],[14.4,53.25]];
+const VBW = 640, VBH = 620;
+const proj = ([lon, lat]) => [(lon - 13.8) * 60, (55.1 - lat) * 97.4];
+const svg = $('#map-svg');
+const pathD = POLY.map((p, i) => (i ? 'L' : 'M') + proj(p).map(v => v.toFixed(1)).join(' ')).join('') + 'Z';
+const [wx, wy] = proj(CITY['Warszawa']);
+const arcs = Object.keys(CITY).filter(c => c !== 'Warszawa').map(c => {
+  const [x, y] = proj(CITY[c]); const mx = (wx + x) / 2, my = (wy + y) / 2; const dx = x - wx, dy = y - wy;
+  return `<path class="arc" d="M${wx} ${wy} Q${(mx - dy * .18).toFixed(1)} ${(my + dx * .18).toFixed(1)} ${x.toFixed(1)} ${y.toFixed(1)}"/>`;
+}).join('');
+svg.innerHTML = `<defs>
+    <pattern id="dots" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.35" fill="currentColor"/></pattern>
+    <linearGradient id="arcGrad" x1="0" x2="1"><stop offset="0" stop-color="#00A8CC"/><stop offset="1" stop-color="#00C49F"/></linearGradient>
+    <radialGradient id="mapGlow" cx="55%" cy="45%" r="60%"><stop offset="0" stop-color="#00A8CC" stop-opacity=".16"/><stop offset="1" stop-color="#00A8CC" stop-opacity="0"/></radialGradient>
+  </defs>
+  <path d="${pathD}" fill="url(#mapGlow)"/>
+  <path d="${pathD}" fill="url(#dots)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+  <g id="arcs">${arcs}</g><g id="pins"></g>`;
+const byCity = {}; FAC.forEach(f => (byCity[f.c] = byCity[f.c] || []).push(f));
+$('#pins').innerHTML = Object.keys(byCity).map(c => {
+  const [x, y] = proj(CITY[c]), n = byCity[c].length, r = 7 + n * 2;
+  return `<g class="pin" data-city="${c}" transform="translate(${x.toFixed(1)} ${y.toFixed(1)})" tabindex="0" role="button" aria-label="${c}: ${n} placówek"><circle class="pin-pulse" r="${r}"/><circle class="pin-dot" r="${r}"/><text text-anchor="middle" dy="3.5">${n}</text></g>`;
+}).join('');
+const fCity = $('#f-city');
+fCity.insertAdjacentHTML('beforeend', Object.keys(byCity).sort((a, b) => a.localeCompare(b, 'pl')).map(c => `<option>${c}</option>`).join(''));
+const state = { city: '', q: '', p: false, d: false, h: false, m: false };
+const tip = $('#map-tip'), wrap = $('#map-wrap');
+function showTip(g) {
+  const c = g.dataset.city, [x, y] = proj(CITY[c]), s = wrap.clientWidth / VBW;
+  const list = byCity[c], vis = list.filter(match).length;
+  tip.innerHTML = `<b>${c}</b><span class="text-white/65"> · ${vis} z ${list.length} pasuje do filtrów</span>`;
+  tip.style.left = x * s + 'px'; tip.style.top = (y * s - 16) + 'px'; tip.style.opacity = 1;
+}
+function match(f) {
+  const q = norm(state.q);
+  return (!state.city || f.c === state.city) && (!q || norm(f.n + ' ' + f.a + ' ' + f.c).includes(q)) && (!state.p || f.p) && (!state.d || f.d) && (!state.h || f.x) && (!state.m || f.m);
+}
+function applyFilters() {
+  const res = FAC.filter(match);
+  $('#fac-count').textContent = res.length;
+  $('#map-caption').textContent = state.city || 'Cała Polska';
+  const list = $('#fac-list');
+  list.innerHTML = res.length ? res.map(f => `
+    <li><div class="fac-item rounded-2xl border border-transparent p-3.5 cursor-pointer" data-id="${f.id}" data-city="${f.c}" tabindex="0">
+      <div class="flex items-start gap-3">
+        <span class="grid place-items-center w-10 h-10 rounded-xl ${f.hosp ? 'bg-navy text-white' : 'bg-aqua/10 text-aqua-dark'} shrink-0"><i data-lucide="${f.hosp ? 'building-2' : 'stethoscope'}" class="w-5 h-5"></i></span>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-ink text-[15px] leading-snug">${f.n}</p>
+          <p class="text-[13px] text-muted mt-0.5">${f.a}, ${f.c} · ${f.h}</p>
+          <div class="mt-2 flex flex-wrap gap-1.5">${f.p ? '<span class="tag"><i data-lucide="car"></i>Parking</span>' : ''}${f.d ? '<span class="tag"><i data-lucide="accessibility"></i>Dostępna</span>' : ''}${f.x ? '<span class="tag !bg-navy !text-white"><i data-lucide="moon"></i>24/7</span>' : ''}${f.m ? '<span class="tag"><i data-lucide="scan-line"></i>MR/TK</span>' : ''}</div>
+        </div>
+        <div class="text-right shrink-0 hidden sm:block"><p class="text-[11px] text-muted">Najbliższy termin</p><p class="text-sm font-bold text-jade dark:text-mint mt-0.5">${f.s}</p></div>
+      </div></div></li>`).join('')
+    : `<li class="rounded-2xl border border-dashed border-line p-6 text-center"><p class="font-semibold text-ink">Żadna placówka nie spełnia wszystkich filtrów</p><p class="text-sm text-muted mt-1">Odznacz jedno z udogodnień lub wybierz „Wszystkie miasta”.</p></li>`;
+  icons();
+  $$('.pin').forEach(g => {
+    const c = g.dataset.city, any = byCity[c].some(match);
+    g.classList.toggle('is-dim', !any);
+    g.classList.toggle('is-hot', !!state.city && c === state.city);
+  });
+}
+fCity.addEventListener('change', () => { state.city = fCity.value; applyFilters(); });
+$('#f-q').addEventListener('input', e => { state.q = e.target.value; applyFilters(); });
+$$('.chip[data-f]').forEach(ch => ch.addEventListener('click', () => { const k = ch.dataset.f; state[k] = !state[k]; ch.setAttribute('aria-pressed', state[k]); applyFilters(); }));
+$('#f-reset').addEventListener('click', () => { Object.assign(state, { city: '', q: '', p: false, d: false, h: false, m: false }); fCity.value = ''; $('#f-q').value = ''; $$('.chip[data-f]').forEach(c => c.setAttribute('aria-pressed', 'false')); applyFilters(); });
+function pickCity(c) { state.city = state.city === c ? '' : c; fCity.value = state.city; applyFilters(); }
+$$('.pin').forEach(g => {
+  g.addEventListener('mouseenter', () => showTip(g));
+  g.addEventListener('focus', () => showTip(g));
+  g.addEventListener('mouseleave', () => tip.style.opacity = 0);
+  g.addEventListener('blur', () => tip.style.opacity = 0);
+  g.addEventListener('click', () => pickCity(g.dataset.city));
+  g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pickCity(g.dataset.city); } });
+});
+const list = $('#fac-list');
+list.addEventListener('mouseover', e => { const it = e.target.closest('.fac-item'); $$('.pin').forEach(g => g.classList.toggle('is-hot', !!it && g.dataset.city === it.dataset.city || (!!state.city && g.dataset.city === state.city))); });
+list.addEventListener('mouseleave', () => $$('.pin').forEach(g => g.classList.toggle('is-hot', !!state.city && g.dataset.city === state.city)));
+list.addEventListener('click', e => { const it = e.target.closest('.fac-item'); if (!it) return; const f = FAC[+it.dataset.id]; toast(`<b>${esc(f.n)}</b>, ${esc(f.c)} — najbliższy wolny termin: ${esc(f.s)}.`, 'calendar-check'); });
+list.addEventListener('keydown', e => { if (e.key === 'Enter') e.target.closest('.fac-item')?.click(); });
+applyFilters();
+
+/* ---------- Spotlight pointer ---------- */
+document.addEventListener('pointermove', e => {
+  const el = e.target.closest && e.target.closest('.spot');
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+  el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+}, { passive: true });
+
+/* ---------- Three.js DNA ---------- */
+function initDNA() {
+  const panel = $('#dna'), canvas = $('#dna-canvas');
+  if (!window.THREE) { panel.classList.add('no-webgl'); return; }
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' }); }
+  catch (e) { panel.classList.add('no-webgl'); return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0x000000, 0);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+  const root = new THREE.Group(); scene.add(root);
+  const helix = new THREE.Group(); helix.rotation.z = 0.42; root.add(helix);
+
+  const sprite = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.22, 'rgba(255,255,255,.9)'); gr.addColorStop(.55, 'rgba(255,255,255,.2)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+  })();
+
+  const N = 96, H = 11.5, TURNS = 2.3, R = 1.9;
+  const pos = new Float32Array(N * 2 * 3), col = new Float32Array(N * 2 * 3), base = new Float32Array(N * 2 * 3);
+  const cA = new THREE.Color('#00A8CC'), cB = new THREE.Color('#00C49F'), tmp = new THREE.Color();
+  for (let s = 0; s < 2; s++) for (let i = 0; i < N; i++) {
+    const t = i / (N - 1), a = t * TURNS * Math.PI * 2 + s * Math.PI, k = (s * N + i) * 3;
+    pos[k] = Math.cos(a) * R; pos[k + 1] = (t - .5) * H; pos[k + 2] = Math.sin(a) * R;
+    tmp.copy(s ? cB : cA).lerp(s ? cA : cB, t * .6);
+    base[k] = col[k] = tmp.r; base[k + 1] = col[k + 1] = tmp.g; base[k + 2] = col[k + 2] = tmp.b;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const nodes = new THREE.Points(geo, new THREE.PointsMaterial({ size: .46, map: sprite, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  helix.add(nodes);
+
+  for (let s = 0; s < 2; s++) {
+    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.BufferAttribute(pos.slice(s * N * 3, (s + 1) * N * 3), 3));
+    helix.add(new THREE.Line(lg, new THREE.LineBasicMaterial({ color: s ? 0x00C49F : 0x00A8CC, transparent: true, opacity: .4, blending: THREE.AdditiveBlending, depthWrite: false })));
+  }
+  const rp = [], rc = [], mid = [];
+  for (let i = 0; i < N; i += 3) {
+    const a = i * 3, b = (N + i) * 3;
+    rp.push(pos[a], pos[a + 1], pos[a + 2], pos[b], pos[b + 1], pos[b + 2]);
+    rc.push(0, .66, .8, 0, .77, .62);
+    mid.push((pos[a] + pos[b]) / 2, pos[a + 1], (pos[a + 2] + pos[b + 2]) / 2);
+  }
+  const rg = new THREE.BufferGeometry();
+  rg.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
+  rg.setAttribute('color', new THREE.Float32BufferAttribute(rc, 3));
+  helix.add(new THREE.LineSegments(rg, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: .32, blending: THREE.AdditiveBlending, depthWrite: false })));
+  const mg = new THREE.BufferGeometry(); mg.setAttribute('position', new THREE.Float32BufferAttribute(mid, 3));
+  helix.add(new THREE.Points(mg, new THREE.PointsMaterial({ size: .2, map: sprite, color: 0xffffff, transparent: true, opacity: .55, depthWrite: false, blending: THREE.AdditiveBlending })));
+
+  const P = window.innerWidth < 768 ? 320 : 650;
+  const fp = new Float32Array(P * 3), fc = new Float32Array(P * 3);
+  for (let i = 0; i < P; i++) {
+    const r = 4 + Math.random() * 6, th = Math.random() * Math.PI * 2, ph = Math.acos(2 * Math.random() - 1);
+    fp[i * 3] = r * Math.sin(ph) * Math.cos(th); fp[i * 3 + 1] = r * Math.cos(ph) * .9; fp[i * 3 + 2] = r * Math.sin(ph) * Math.sin(th);
+    tmp.set(Math.random() > .5 ? '#00A8CC' : '#7FE7D2').lerp(new THREE.Color('#ffffff'), Math.random() * .5);
+    fc[i * 3] = tmp.r; fc[i * 3 + 1] = tmp.g; fc[i * 3 + 2] = tmp.b;
+  }
+  const fg = new THREE.BufferGeometry();
+  fg.setAttribute('position', new THREE.BufferAttribute(fp, 3)); fg.setAttribute('color', new THREE.BufferAttribute(fc, 3));
+  const field = new THREE.Points(fg, new THREE.PointsMaterial({ size: .09, map: sprite, vertexColors: true, transparent: true, opacity: .75, depthWrite: false, blending: THREE.AdditiveBlending }));
+  root.add(field);
+
+  const orbits = [];
+  [[3.4, .35, 0x00A8CC], [4.3, -.55, 0x00C49F]].forEach(([r, tilt, c], j) => {
+    const pts = []; for (let i = 0; i <= 128; i++) { const a = i / 128 * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r)); }
+    const g = new THREE.Group(); g.rotation.x = Math.PI / 2 + tilt; g.rotation.z = j * .8;
+    g.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: .18, blending: THREE.AdditiveBlending, depthWrite: false })));
+    const sat = new THREE.Points(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3()]), new THREE.PointsMaterial({ size: .5, map: sprite, color: c, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    g.add(sat); root.add(g); orbits.push({ sat, r, speed: j ? -.35 : .5 });
+  });
+
+  function resize() {
+    const w = panel.clientWidth, h = panel.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.position.set(0, 0, w / h < 1 ? 15.5 / Math.max(w / h, .72) : 15.5);
+    camera.updateProjectionMatrix();
+  }
+  resize();
+  if ('ResizeObserver' in window) new ResizeObserver(resize).observe(panel); else window.addEventListener('resize', resize);
+
+  let mx = 0, my = 0, rx = 0, ry = 0, boost = 0, boostT = 0;
+  const hero = $('#top');
+  hero.addEventListener('pointermove', e => { mx = (e.clientX / window.innerWidth - .5) * 2; my = (e.clientY / window.innerHeight - .5) * 2; }, { passive: true });
+  panel.addEventListener('pointerenter', () => boostT = 1);
+  panel.addEventListener('pointerleave', () => boostT = 0);
+
+  let visible = true, running = false;
+  const clock = new THREE.Clock();
+  const colAttr = geo.attributes.color;
+  function frame() {
+    if (!visible || document.hidden) { running = false; return; }
+    const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+    boost += (boostT - boost) * .05;
+    helix.rotation.y += dt * (reduced ? .06 : .28 + boost * .5);
+    const w = ((t * .28) % 1.5) - .25;
+    for (let s = 0; s < 2; s++) for (let i = 0; i < N; i++) {
+      const k = (s * N + i) * 3, d = Math.abs(i / (N - 1) - w), h = Math.max(0, 1 - d * 8) * .9;
+      col[k] = base[k] + (1 - base[k]) * h; col[k + 1] = base[k + 1] + (1 - base[k + 1]) * h; col[k + 2] = base[k + 2] + (1 - base[k + 2]) * h;
+    }
+    colAttr.needsUpdate = true;
+    rx += (my * .28 - rx) * .05; ry += (mx * .45 - ry) * .05;
+    root.rotation.x = rx; root.rotation.y = ry;
+    root.position.y = Math.sin(t * .6) * .15;
+    field.rotation.y += dt * .025; field.rotation.x += dt * .008;
+    orbits.forEach(o => { const a = t * o.speed; o.sat.position.set(Math.cos(a) * o.r, 0, Math.sin(a) * o.r); });
+    renderer.render(scene, camera);
+    requestAnimationFrame(frame);
+  }
+  function start() { if (!running && visible && !document.hidden) { running = true; clock.getDelta(); requestAnimationFrame(frame); } }
+  if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { visible = en.isIntersecting; start(); }, { threshold: 0 }).observe(panel);
+  document.addEventListener('visibilitychange', start);
+  start();
+}
+
+/* ---------- GSAP choreography ---------- */
+function animations() {
+  const heroCounters = () => $$('.badge [data-count]').forEach(el => countUp(el, 2.2));
+  if (!G || reduced) {
+    $$('[data-count]').forEach(el => { const pre = el.dataset.prefix || ''; el.textContent = pre + fmt(+el.dataset.count); });
+    const ring = $('#tele-ring'); if (ring) ring.style.strokeDashoffset = 144.5 * .17;
+    return;
+  }
+  const tl = G.timeline({ defaults: { ease: 'power3.out' } });
+  tl.from('.h-in', { y: 26, opacity: 0, duration: .9, stagger: .08, clearProps: 'transform,opacity' })
+    .from('#dna', { opacity: 0, scale: .96, duration: 1.1, clearProps: 'transform,opacity' }, .15)
+    .from('.badge', { opacity: 0, y: 20, scale: .9, duration: .7, stagger: .12, clearProps: 'transform,opacity', onStart: heroCounters }, .55);
+
+  if (!window.ScrollTrigger) { $$('#why-grid [data-count]').forEach(el => countUp(el)); return; }
+
+  G.to('.hero-blob', { yPercent: 30, ease: 'none', scrollTrigger: { trigger: '#top', start: 'top top', end: 'bottom top', scrub: true } });
+
+  $$('.reveal').forEach(el => G.from(el, { y: 36, opacity: 0, duration: .9, ease: 'power3.out', clearProps: 'transform,opacity', scrollTrigger: { trigger: el, start: 'top 88%', once: true } }));
+
+  ScrollTrigger.batch('.qa-card', { start: 'top 90%', once: true, onEnter: b => G.from(b, { y: 40, opacity: 0, duration: .8, stagger: .08, ease: 'power3.out', clearProps: 'transform,opacity' }) });
+  G.from('#tab-list', { y: 20, opacity: 0, duration: .7, clearProps: 'transform,opacity', scrollTrigger: { trigger: '#tab-list', start: 'top 90%', once: true } });
+  G.from('#tab-panel', { y: 40, opacity: 0, duration: .9, ease: 'power3.out', clearProps: 'transform,opacity', scrollTrigger: { trigger: '#tab-panel', start: 'top 85%', once: true } });
+  G.from('.plan-wrap', { y: 60, opacity: 0, duration: 1, stagger: .12, ease: 'power3.out', clearProps: 'transform,opacity', scrollTrigger: { trigger: '#plans', start: 'top 82%', once: true } });
+  G.from('#pins .pin', { opacity: 0, duration: .5, stagger: .05, clearProps: 'opacity', scrollTrigger: { trigger: '#map-svg', start: 'top 80%', once: true } });
+
+  ScrollTrigger.batch('.why-card', {
+    start: 'top 88%', once: true,
+    onEnter: b => G.from(b, { y: 60, opacity: 0, rotateX: -12, transformOrigin: '50% 100%', duration: 1, stagger: .1, ease: 'power3.out', clearProps: 'transform,opacity' })
+  });
+  ScrollTrigger.create({ trigger: '#why-grid', start: 'top 75%', once: true, onEnter: () => {
+    $$('#why-grid [data-count]').forEach(el => countUp(el, 1.6));
+    G.to('#tele-ring', { strokeDashoffset: 144.5 * .17, duration: 1.6, ease: 'power3.out' });
+  } });
+  window.addEventListener('load', () => ScrollTrigger.refresh());
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => ScrollTrigger.refresh());
+}
+
+/* ---------- Boot ---------- */
+renderNav();
+icons();
+requestAnimationFrame(moveSeg);
+initDNA();
+animations();
+$('#year').textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
